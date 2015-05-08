@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<resources>
+
+    <style name="Style.plugin_file_item_checkbox" parent="@android:style/Widget.CompoundButton.CheckBox">
+        <item name="android:button">@drawable/plugin_file_cb_bg_selector</item>
+    </style>  
+
+</resources>
