@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <uexplugins>
     <plugin
-        uexName="uexFileMgr" version="3.0.3" build="3">
-        <info>3:添加重命名接口</info>
-		<build>2:修复res://协议下获取真实路径不正确的问题</build>
+        uexName="uexFileMgr" version="3.0.4" build="4">
+        <info>4:添加重命名接口</info>
+        <build>3:修复解析res://路径的getFileRealPath方法返回错误问题</build>
+        <build>2:修复res://协议下获取真实路径不正确的问题</build>
         <build>1:新增获取文件或文件夹的创建时间</build>
-		<build>0:文件管理功能插件</build>
+        <build>0:文件管理功能插件</build>
     </plugin>
 </uexplugins>
