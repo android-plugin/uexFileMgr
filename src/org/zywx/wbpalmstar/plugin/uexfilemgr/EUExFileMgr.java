@@ -835,7 +835,9 @@ public class EUExFileMgr extends EUExBase {
 				BUtility.makeUrl(mBrwView.getCurrentUrl(), inPath),
 				mBrwView.getCurrentWidget().m_widgetPath,
 				mBrwView.getCurrentWidget().m_wgtType);
-		if(flag) {
+		if (flag && inPath != null
+				&& inPath.startsWith(BUtility.F_Widget_RES_path)) {
+			// 判断如果是解析res://协议并且解析出来的路径以widget/wgtRes/开头（即这是一个主应用没有开启增量更新的情况），就认为是assets路径
 			inPath = "file:///android_asset/" + inPath;
 			flag = false;
 		}
