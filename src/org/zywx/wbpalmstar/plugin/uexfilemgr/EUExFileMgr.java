@@ -37,7 +37,8 @@ public class EUExFileMgr extends EUExBase {
 	public static final String F_CALLBACK_NAME_EXPLORER = "uexFileMgr.cbExplorer";
 	public static final String F_CALLBACK_NAME_MULTI_EXPLORER = "uexFileMgr.cbMultiExplorer";
 	private static final String F_CALLBACK_NAME_READFILE = "uexFileMgr.cbReadFile";
-	private static final String F_CALLBACK_NAME_GETFILESIZE = "uexFileMgr.cbGetFileSize";
+    private static final String F_CALLBACK_NAME_WRITEFILE = "uexFileMgr.cbWriteFile";
+    private static final String F_CALLBACK_NAME_GETFILESIZE = "uexFileMgr.cbGetFileSize";
 	private static final String F_CALLBACK_NAME_GETFILEPATH = "uexFileMgr.cbGetFilePath";
 	private static final String F_CALLBACK_NAME_GETFILEREALPATH = "uexFileMgr.cbGetFileRealPath";
 	private static final String F_CALLBACK_NAME_GETREADEROFFSET = "uexFileMgr.cbGetReaderOffset";
@@ -732,8 +733,14 @@ public class EUExFileMgr extends EUExBase {
 		}
 		EUExFile object = objectMap.get(Integer.parseInt(inOpCode));
 		if (object != null) {
-			object.write(inData, Integer.parseInt(inMode));
-
+			boolean result = object.write(inData, Integer.parseInt(inMode));
+            if (result) {
+                jsCallback(F_CALLBACK_NAME_WRITEFILE, Integer.parseInt(inOpCode),
+                        EUExCallback.F_C_INT, EUExCallback.F_C_SUCCESS);
+            } else {
+                jsCallback(F_CALLBACK_NAME_WRITEFILE, Integer.parseInt(inOpCode),
+                        EUExCallback.F_C_INT, EUExCallback.F_C_FAILED);
+            }
 		} else {
 			errorCallback(
 					Integer.parseInt(inOpCode),

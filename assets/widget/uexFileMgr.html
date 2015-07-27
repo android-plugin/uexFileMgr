@@ -510,6 +510,26 @@
 			}
 
 		}
+		uexFileMgr.cbWriteFile =  function(opCode, dataType, data) {
+			switch (dataType) {
+			case cText:
+				alert("uex.cText");
+				break;
+			case cJson:
+				alert("uex.cJson");
+				break;
+			case cInt:
+				if (data == 0) {
+					alert("写入文件成功");
+				} else {
+					alert("写入文件失败");
+				}
+				break;
+			default:
+				alert("error");
+
+			}
+		}
 	}
 		</script>
   </head>
