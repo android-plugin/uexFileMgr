@@ -31,5 +31,6 @@
         <method name="createSecure" />
         <method name="getFileCreateTime"/>
         <method name="renameFile"/>
+        <method name="getFileListByPath"/>
     </plugin>
 </uexplugins>
