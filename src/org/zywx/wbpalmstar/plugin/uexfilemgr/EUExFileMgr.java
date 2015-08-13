@@ -7,6 +7,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Iterator;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.zywx.wbpalmstar.base.BUtility;
@@ -15,11 +17,13 @@ import org.zywx.wbpalmstar.engine.EBrowserView;
 import org.zywx.wbpalmstar.engine.universalex.EUExBase;
 import org.zywx.wbpalmstar.engine.universalex.EUExCallback;
 import org.zywx.wbpalmstar.widgetone.dataservice.WWidgetData;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.text.TextUtils;
+import android.util.Log;
 import android.widget.Toast;
 
 public class EUExFileMgr extends EUExBase {
@@ -47,7 +51,7 @@ public class EUExFileMgr extends EUExBase {
 	private static final String F_CALLBACK_NAME_READPRE = "uexFileMgr.cbReadPre";
 	private static final String  F_CALLBACK_NAME_CREATESECURE =  "uexFileMgr.cbCreateSecure";
 	private static final String  F_CALLBACK_NAME_OPENSECURE = "uexFileMgr.cbOpenSecure";
-	
+	private static final String F_CALLBACK_NAME_GETFILELISTBYPATH = "uexFileMgr.cbGetFileListByPath";
 
 	private static final String F_CALLBACK_NAME_DELETEFILEBYPATH = "uexFileMgr.cbDeleteFileByPath";
 	private static final String F_CALLBACK_NAME_DELETEFILEBYID = "uexFileMgr.cbDeleteFileByID";
@@ -1013,6 +1017,63 @@ public class EUExFileMgr extends EUExBase {
 						EUExCallback.F_C_FAILED);
 			}
 		}
+	}
+	public void getFileListByPath(String[] params) {
+		if (params.length < 1) {
+			Log.i("uexFileMgr", "getFileListByPath");
+			return;
+		}
+		String inPath = params[0];
+		if (testNull(mBrwView.getCurrentWidget(), inPath, 0)) {
+			jsCallback(F_CALLBACK_NAME_GETFILELISTBYPATH, 0,
+					EUExCallback.F_C_TEXT, "");
+			return;
+		}
+		inPath = BUtility.makeRealPath(
+				BUtility.makeUrl(mBrwView.getCurrentUrl(), inPath),
+				mBrwView.getCurrentWidget().m_widgetPath,
+				mBrwView.getCurrentWidget().m_wgtType);
+		final String dirPath = inPath;
+		new Thread(new Runnable() {
+
+			@Override
+			public void run() {
+				try {
+					File srcFile = new File(dirPath);
+					if (!srcFile.exists()) {
+						jsCallback(F_CALLBACK_NAME_GETFILELISTBYPATH, 0,
+								EUExCallback.F_C_TEXT, "");
+						return;
+					}
+					File[] fileList = srcFile.listFiles();
+					JSONArray array = new JSONArray();
+					String resultJson = "";
+					for (int i = 0; i < fileList.length; i++) {
+						File fileItem = fileList[i];
+						int resValue = EUExCallback.F_C_File;
+						if (fileItem.isDirectory()) {
+							resValue = EUExCallback.F_C_Folder;
+						}
+						JSONObject json = new JSONObject();
+						json.put("fileName", fileItem.getName());
+						json.put("filePath", fileItem.getAbsolutePath());
+						json.put("fileType", resValue);
+						array.put(json);
+					}
+					resultJson = array.toString();
+					jsCallback(F_CALLBACK_NAME_GETFILELISTBYPATH, 0,
+							EUExCallback.F_C_JSON, resultJson);
+				} catch (SecurityException e) {
+					Toast.makeText(
+							m_context,
+							ResoureFinder.getInstance().getString(mContext,
+									"error_no_permisson_RW"),
+							Toast.LENGTH_SHORT).show();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}).start();
 	}
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
