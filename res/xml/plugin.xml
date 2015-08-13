@@ -30,5 +30,6 @@
         <method name="openSecure" />
         <method name="createSecure" />
         <method name="getFileCreateTime"/>
+        <method name="renameFile"/>
     </plugin>
 </uexplugins>

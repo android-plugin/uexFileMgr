@@ -28,6 +28,7 @@ public class EUExFileMgr extends EUExBase {
 	private static final String F_CALLBACK_NAME_CREATEFILE = "uexFileMgr.cbCreateFile";
 	private static final String F_CALLBACK_NAME_CREATEDIR = "uexFileMgr.cbCreateDir";
 	private static final String F_CALLBACK_NAME_GETFILECREATETIME = "uexFileMgr.cbGetFileCreateTime";
+    private static final String F_CALLBACK_NAME_RENAMEFILE = "uexFileMgr.cbRenameFile";
 	private static final String F_CALLBACK_NAME_OPENFILE = "uexFileMgr.cbOpenFile";
 	private static final String F_CALLBACK_NAME_ISFILEEXISTBYPATH = "uexFileMgr.cbIsFileExistByPath";
 	private static final String F_CALLBACK_NAME_ISFILEEXISTBYID = "uexFileMgr.cbIsFileExistById";
@@ -36,7 +37,8 @@ public class EUExFileMgr extends EUExBase {
 	public static final String F_CALLBACK_NAME_EXPLORER = "uexFileMgr.cbExplorer";
 	public static final String F_CALLBACK_NAME_MULTI_EXPLORER = "uexFileMgr.cbMultiExplorer";
 	private static final String F_CALLBACK_NAME_READFILE = "uexFileMgr.cbReadFile";
-	private static final String F_CALLBACK_NAME_GETFILESIZE = "uexFileMgr.cbGetFileSize";
+    private static final String F_CALLBACK_NAME_WRITEFILE = "uexFileMgr.cbWriteFile";
+    private static final String F_CALLBACK_NAME_GETFILESIZE = "uexFileMgr.cbGetFileSize";
 	private static final String F_CALLBACK_NAME_GETFILEPATH = "uexFileMgr.cbGetFilePath";
 	private static final String F_CALLBACK_NAME_GETFILEREALPATH = "uexFileMgr.cbGetFileRealPath";
 	private static final String F_CALLBACK_NAME_GETREADEROFFSET = "uexFileMgr.cbGetReaderOffset";
@@ -108,9 +110,6 @@ public class EUExFileMgr extends EUExBase {
 
 	/**
 	 * 创建一个文件对象
-	 * 
-	 * @param inPath
-	 *            文件路径
 	 * @return 文件对象
 	 */
 
@@ -150,9 +149,6 @@ public class EUExFileMgr extends EUExBase {
 
 	/**
 	 * 创建个文件夹对象
-	 * 
-	 * @param inPath
-	 *            文件夹路径
 	 * @return 文件夹对象
 	 */
 	public void createDir(String[] parm) {
@@ -191,11 +187,6 @@ public class EUExFileMgr extends EUExBase {
 
 	/**
 	 * 打开一个文件
-	 * 
-	 * @param inPath
-	 *            文件路径
-	 * @param mode
-	 *            方式(1-读;2-写;4-创建;8-电子书);
 	 * @return 文件对象
 	 */
 
@@ -243,9 +234,6 @@ public class EUExFileMgr extends EUExBase {
 
 	/**
 	 * 删除一个文件
-	 * 
-	 * @param inPath
-	 *            文件路径
 	 * @return (true-成功;false-失败)
 	 */
 
@@ -745,8 +733,14 @@ public class EUExFileMgr extends EUExBase {
 		}
 		EUExFile object = objectMap.get(Integer.parseInt(inOpCode));
 		if (object != null) {
-			object.write(inData, Integer.parseInt(inMode));
-
+			boolean result = object.write(inData, Integer.parseInt(inMode));
+            if (result) {
+                jsCallback(F_CALLBACK_NAME_WRITEFILE, Integer.parseInt(inOpCode),
+                        EUExCallback.F_C_INT, EUExCallback.F_C_SUCCESS);
+            } else {
+                jsCallback(F_CALLBACK_NAME_WRITEFILE, Integer.parseInt(inOpCode),
+                        EUExCallback.F_C_INT, EUExCallback.F_C_FAILED);
+            }
 		} else {
 			errorCallback(
 					Integer.parseInt(inOpCode),
@@ -1081,4 +1075,51 @@ public class EUExFileMgr extends EUExBase {
 		objectMap.clear();
 		return true;
 	}
+
+    public void renameFile(final String[] params) {
+        ((Activity)mContext).runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                String jsonString= params[0];
+                String oldFilePath=null;
+                String newPath=null;
+                JSONObject resultJson=new JSONObject();
+                String result="1";
+                try {
+                    JSONObject jsonObject=new JSONObject(jsonString);
+                    oldFilePath=jsonObject.optString("oldFilePath");
+                    newPath=jsonObject.optString("newFilePath");
+                } catch (JSONException e) {
+
+                }
+                if (!TextUtils.isEmpty(oldFilePath)&&!TextUtils.isEmpty(newPath)){
+                    oldFilePath = BUtility.makeRealPath(
+                            BUtility.makeUrl(mBrwView.getCurrentUrl(), oldFilePath),
+                            mBrwView.getCurrentWidget().m_widgetPath,
+                            mBrwView.getCurrentWidget().m_wgtType);
+                    newPath= BUtility.makeRealPath(
+                            BUtility.makeUrl(mBrwView.getCurrentUrl(), newPath),
+                            mBrwView.getCurrentWidget().m_widgetPath,
+                            mBrwView.getCurrentWidget().m_wgtType);
+                    File oldFile=new File(oldFilePath);
+                    File newFile=new File(newPath);
+                    if (!oldFile.renameTo(newFile)) {
+                        result="0";
+                    }
+                }else{
+                    result="0";
+                }
+                try {
+                    resultJson.put("result",result);
+                } catch (JSONException e) {
+                }
+                String js = SCRIPT_HEADER + "if(" + F_CALLBACK_NAME_RENAMEFILE + "){"
+                        + F_CALLBACK_NAME_RENAMEFILE + "('" + resultJson.toString() + "');}";
+                onCallback(js);
+            }
+        });
+
+    }
+
+
 }

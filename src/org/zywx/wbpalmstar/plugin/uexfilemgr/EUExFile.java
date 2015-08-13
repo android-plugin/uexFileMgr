@@ -1,5 +1,13 @@
 package org.zywx.wbpalmstar.plugin.uexfilemgr;
 
+import android.content.Context;
+import android.text.TextUtils;
+import android.widget.Toast;
+
+import org.apache.http.util.EncodingUtils;
+import org.zywx.wbpalmstar.base.BUtility;
+import org.zywx.wbpalmstar.base.ResoureFinder;
+
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -8,14 +16,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
-
-import org.apache.http.util.EncodingUtils;
-import org.zywx.wbpalmstar.base.BUtility;
-import org.zywx.wbpalmstar.base.ResoureFinder;
-
-import android.content.Context;
-import android.text.TextUtils;
-import android.widget.Toast;
 
 public class EUExFile {
 	private final static int F_PAGE_PRE = 0;
@@ -168,12 +168,11 @@ public class EUExFile {
 	 * 
 	 * @param data
 	 *            字符串
-	 * @return 写入的字节数
+	 * @return 是否写入成功
 	 */
-	protected void write(String data, int inMode) {
-
+	protected boolean write(String data, int inMode) {
 		if (m_inPath == null || m_inPath.length() == 0) {
-			return;
+			return false;
 		}
 		try {
 			if (m_fout != null) {
@@ -193,9 +192,10 @@ public class EUExFile {
 			}
 			m_fout.write(data);
 			m_fout.flush();
-
+			return true;
 		} catch (IOException e) {
 			e.printStackTrace();
+			return false;
 		}
 
 	}
