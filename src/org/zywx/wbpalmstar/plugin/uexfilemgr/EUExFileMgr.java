@@ -839,8 +839,13 @@ public class EUExFileMgr extends EUExBase {
 			inPath = "file:///android_asset/" + inPath;
 			flag = false;
 		}
-		jsCallback(F_CALLBACK_NAME_GETFILEREALPATH, 0, EUExCallback.F_C_TEXT,
-				inPath);
+		if(parm.length==2){
+			String inCallBack=parm[1];
+			jsCallback("uexFileMgr."+inCallBack,0, EUExCallback.F_C_TEXT,inPath);
+		}else{
+			jsCallback(F_CALLBACK_NAME_GETFILEREALPATH, 0, EUExCallback.F_C_TEXT,
+					inPath);	
+		}
 
 	}
 
