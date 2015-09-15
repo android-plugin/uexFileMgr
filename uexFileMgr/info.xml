@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <uexplugins>
     <plugin
-        uexName="uexFileMgr" version="3.0.6" build="6">
-        <info>6.新增getFileListByPath方法获取指定目录中的文件列表</info>
+        uexName="uexFileMgr" version="3.0.7" build="7">
+        <info>7.修改接口getFileRealPath,支持回调方法名称的传入</info>
+        <build>6.新增getFileListByPath方法获取指定目录中的文件列表</build>
         <build>5.新增cbWriteFile回调方法</build>
         <build>4:添加重命名接口</build>
         <build>3:修复解析res://路径的getFileRealPath方法返回错误问题</build>
