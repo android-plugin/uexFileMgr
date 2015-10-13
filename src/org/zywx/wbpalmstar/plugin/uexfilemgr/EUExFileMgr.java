@@ -758,7 +758,6 @@ public class EUExFileMgr extends EUExBase {
 	}
 
 	public void readFile(String[] parm) {
-        BDebug.i("appcan", Arrays.toString(parm));
         if (parm.length != 2) {
             return;
         }
@@ -767,16 +766,13 @@ public class EUExFileMgr extends EUExBase {
             return;
         }
         EUExFile object = objectMap.get(Integer.parseInt(inOpCode));
-        BDebug.i("appcan", object.toString());
         if (object != null) {
             String resString = object.read(Integer
                     .parseInt(inLen));
-            BDebug.i("appcan","resString: "+resString);
             if (TextUtils.isEmpty(resString)) {
                 jsCallback(F_CALLBACK_NAME_READFILE, Integer.parseInt(inOpCode),
                         EUExCallback.F_C_TEXT, "");
             } else {
-                BDebug.i("appcan","transcoding: "+BUtility.transcoding(resString));
                 jsCallback(F_CALLBACK_NAME_READFILE, Integer.parseInt(inOpCode),
                         EUExCallback.F_C_TEXT, BUtility.transcoding(resString));
             }

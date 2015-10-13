@@ -291,7 +291,6 @@ public class EUExFile {
 	 * 关闭文件
 	 */
 	protected void close() {
-        BDebug.i("appcan","close ....");
 		try {
 			if (m_fout != null) {
 				m_fout.close();
