@@ -5,17 +5,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.zywx.wbpalmstar.base.BDebug;
 import org.zywx.wbpalmstar.base.BUtility;
 import org.zywx.wbpalmstar.base.ResoureFinder;
 import org.zywx.wbpalmstar.engine.EBrowserView;
 import org.zywx.wbpalmstar.engine.universalex.EUExBase;
 import org.zywx.wbpalmstar.engine.universalex.EUExCallback;
+import org.zywx.wbpalmstar.engine.universalex.EUExUtil;
 import org.zywx.wbpalmstar.widgetone.dataservice.WWidgetData;
 
 import android.app.Activity;
@@ -755,32 +758,36 @@ public class EUExFileMgr extends EUExBase {
 	}
 
 	public void readFile(String[] parm) {
-		if (parm.length != 2) {
-			return;
-		}
-		String inOpCode = parm[0], inLen = parm[1];
-		if (!BUtility.isNumeric(inOpCode)) {
-			return;
-		}
-		EUExFile object = objectMap.get(Integer.parseInt(inOpCode));
-		if (object != null) {
-			String resString = object.read(Integer
-					.parseInt(inLen));
-					if(TextUtils.isEmpty(resString)){
-						jsCallback(F_CALLBACK_NAME_READFILE, Integer.parseInt(inOpCode),
-								EUExCallback.F_C_TEXT, "");
-					}else{
-						jsCallback(F_CALLBACK_NAME_READFILE, Integer.parseInt(inOpCode),
-								EUExCallback.F_C_TEXT,  BUtility.transcoding(resString));
-					}
-		} else {
-			errorCallback(
-					Integer.parseInt(inOpCode),
-					EUExCallback.F_E_UEXFILEMGR_READFILE_1,
-					ResoureFinder.getInstance().getString(mContext,
-							"error_parameter"));
-		}
-	}
+        BDebug.i("appcan", Arrays.toString(parm));
+        if (parm.length != 2) {
+            return;
+        }
+        String inOpCode = parm[0], inLen = parm[1];
+        if (!BUtility.isNumeric(inOpCode)) {
+            return;
+        }
+        EUExFile object = objectMap.get(Integer.parseInt(inOpCode));
+        BDebug.i("appcan", object.toString());
+        if (object != null) {
+            String resString = object.read(Integer
+                    .parseInt(inLen));
+            BDebug.i("appcan","resString: "+resString);
+            if (TextUtils.isEmpty(resString)) {
+                jsCallback(F_CALLBACK_NAME_READFILE, Integer.parseInt(inOpCode),
+                        EUExCallback.F_C_TEXT, "");
+            } else {
+                BDebug.i("appcan","transcoding: "+BUtility.transcoding(resString));
+                jsCallback(F_CALLBACK_NAME_READFILE, Integer.parseInt(inOpCode),
+                        EUExCallback.F_C_TEXT, BUtility.transcoding(resString));
+            }
+        } else {
+            errorCallback(
+                    Integer.parseInt(inOpCode),
+                    EUExCallback.F_E_UEXFILEMGR_READFILE_1,
+                    ResoureFinder.getInstance().getString(mContext,
+                            "error_parameter"));
+        }
+    }
 
 	public void getFileSize(String[] parm) {
 		String inOpCode = parm[0];
@@ -1125,7 +1132,7 @@ public class EUExFileMgr extends EUExBase {
 				mBrwView.getCurrentWidget().m_wgtType);
 		String time = FileUtility.getTimeFromSp(mContext, inPath);
 		if(time == null || "".equalsIgnoreCase(time)) {
-			time = "文件或文件夹不存在";
+			time = EUExUtil.getString("plugin_file_not_exist");
 		}
 		jsCallback(F_CALLBACK_NAME_GETFILECREATETIME, Integer.parseInt(inOpCode),
 				EUExCallback.F_C_TEXT, time);
