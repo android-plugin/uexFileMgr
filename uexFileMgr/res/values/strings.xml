@@ -9,5 +9,8 @@
     <string name="plugin_file_are_you_sure_to_exit_file_explorer">确定退出文件管理器吗</string>
     <string name="plugin_file_target_directory_is_not_exist_auto_redirect_to_sdcard">目前文件夹不存在,自动定位到SD卡目录!</string>
     <string name="plugin_file_input_path_is_not_valid_path_redirect_to_sdcard">传入路径不是一个有效的目录,自动定位到SD卡目录!</string>
+    <string name="plugin_fileMgr_invalid_params">Invalid Params!</string>
+    <string name="plugin_fileMgr_json_format_error">JSON Format Error!</string>
+    <string name="plugin_fileMgr_need_keywords">Need Keywords</string>
 
 </resources>

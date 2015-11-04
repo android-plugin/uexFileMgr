@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <uexplugins>
     <plugin
-        uexName="uexFileMgr" version="3.0.9" build="9">
+        uexName="uexFileMgr" version="3.0.10" build="10">
+        <info>10.添加文件搜索接口</info>
         <info>9.修复闪退的bug</info>
         <build>8.国际化</build>
         <build>7.修改接口getFileRealPath,支持回调方法名称的传入</build>

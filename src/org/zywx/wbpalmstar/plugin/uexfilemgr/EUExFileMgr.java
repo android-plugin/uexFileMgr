@@ -1,18 +1,18 @@
 package org.zywx.wbpalmstar.plugin.uexfilemgr;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.Message;
+import android.text.TextUtils;
+import android.util.Log;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.zywx.wbpalmstar.base.BDebug;
 import org.zywx.wbpalmstar.base.BUtility;
 import org.zywx.wbpalmstar.base.ResoureFinder;
 import org.zywx.wbpalmstar.engine.EBrowserView;
@@ -21,13 +21,14 @@ import org.zywx.wbpalmstar.engine.universalex.EUExCallback;
 import org.zywx.wbpalmstar.engine.universalex.EUExUtil;
 import org.zywx.wbpalmstar.widgetone.dataservice.WWidgetData;
 
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
-import android.text.TextUtils;
-import android.util.Log;
-import android.widget.Toast;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 
 public class EUExFileMgr extends EUExBase {
 
@@ -58,6 +59,7 @@ public class EUExFileMgr extends EUExBase {
 
 	private static final String F_CALLBACK_NAME_DELETEFILEBYPATH = "uexFileMgr.cbDeleteFileByPath";
 	private static final String F_CALLBACK_NAME_DELETEFILEBYID = "uexFileMgr.cbDeleteFileByID";
+    private static final String F_CALLBACK_NAME_SEARCH = "uexFileMgr.cbSearch";
 
 	public static final int F_FILE_OPEN_MODE_READ = 0x1;
 	public static final int F_FILE_OPEN_MODE_WRITE = 0x2;
@@ -74,8 +76,12 @@ public class EUExFileMgr extends EUExBase {
 
 	public static final int F_ACT_REQ_CODE_UEX_FILE_MULTI_EXPLORER = 8;
 	public static final int F_ACT_REQ_CODE_UEX_FILE_EXPLORER = 3;
+    public static final String RES_ROOT = "widget/wgtRes";
+    private static final String BUNDLE_DATA = "data";
+    private static final int MSG_SEARCH = 1;
 
-	private HashMap<Integer, EUExFile> objectMap = new HashMap<Integer, EUExFile>();
+
+    private HashMap<Integer, EUExFile> objectMap = new HashMap<Integer, EUExFile>();
 	Context m_context;
 	private ResoureFinder finder;
 
@@ -206,7 +212,7 @@ public class EUExFileMgr extends EUExBase {
 			return;
 		}
 		if (testNull(mBrwView.getCurrentWidget(), inPath,
-				Integer.parseInt(inOpCode))) {
+                Integer.parseInt(inOpCode))) {
 			jsCallback(F_CALLBACK_NAME_OPENFILE, Integer.parseInt(inOpCode),
 					EUExCallback.F_C_INT, EUExCallback.F_C_FAILED);
 			return;
@@ -421,7 +427,7 @@ public class EUExFileMgr extends EUExBase {
 			Toast.makeText(
 					m_context,
 					ResoureFinder.getInstance().getString(mContext,
-							"error_no_permisson_RW"), Toast.LENGTH_SHORT)
+                            "error_no_permisson_RW"), Toast.LENGTH_SHORT)
 					.show();
 		}
 
@@ -491,7 +497,7 @@ public class EUExFileMgr extends EUExBase {
 			Toast.makeText(
 					m_context,
 					ResoureFinder.getInstance().getString(mContext,
-							"error_no_permisson_RW"), Toast.LENGTH_SHORT)
+                            "error_no_permisson_RW"), Toast.LENGTH_SHORT)
 					.show();
 		}
 
@@ -532,7 +538,7 @@ public class EUExFileMgr extends EUExBase {
 			Toast.makeText(
 					m_context,
 					ResoureFinder.getInstance().getString(mContext,
-							"error_no_permisson_RW"), Toast.LENGTH_SHORT)
+                            "error_no_permisson_RW"), Toast.LENGTH_SHORT)
 					.show();
 		}
 
@@ -562,13 +568,13 @@ public class EUExFileMgr extends EUExBase {
 				}
 
 				jsCallback(F_CALLBACK_NAME_GETFILETYPEBYID, 0,
-						EUExCallback.F_C_INT, resValue);
+                        EUExCallback.F_C_INT, resValue);
 			}
 		} catch (SecurityException e) {
 			Toast.makeText(
 					m_context,
 					ResoureFinder.getInstance().getString(mContext,
-							"error_no_permisson_RW"), Toast.LENGTH_SHORT)
+                            "error_no_permisson_RW"), Toast.LENGTH_SHORT)
 					.show();
 		}
 
@@ -614,7 +620,7 @@ public class EUExFileMgr extends EUExBase {
 				}
 			} else {
 				errorCallback(0, EUExCallback.F_E_UEXFILEMGR_EXPLORER_6,
-						finder.getString("error_sdcard_is_not_available"));
+                        finder.getString("error_sdcard_is_not_available"));
 			}
 		} catch (SecurityException e) {
 			Toast.makeText(m_context,
@@ -663,7 +669,7 @@ public class EUExFileMgr extends EUExBase {
 				}
 			} else {
 				errorCallback(0, EUExCallback.F_E_UEXFILEMGR_EXPLORER_6,
-						finder.getString("error_sdcard_is_not_available"));
+                        finder.getString("error_sdcard_is_not_available"));
 			}
 		} catch (SecurityException e) {
 			Toast.makeText(m_context,
@@ -750,10 +756,10 @@ public class EUExFileMgr extends EUExBase {
             }
 		} else {
 			errorCallback(
-					Integer.parseInt(inOpCode),
-					EUExCallback.F_E_UEXFILEMGR_WRITEFILE_1,
-					ResoureFinder.getInstance().getString(mContext,
-							"error_parameter"));
+                    Integer.parseInt(inOpCode),
+                    EUExCallback.F_E_UEXFILEMGR_WRITEFILE_1,
+                    ResoureFinder.getInstance().getString(mContext,
+                            "error_parameter"));
 		}
 	}
 
@@ -794,13 +800,13 @@ public class EUExFileMgr extends EUExBase {
 		if (object != null) {
 			long res = object.getSize();
 			jsCallback(F_CALLBACK_NAME_GETFILESIZE, Integer.parseInt(inOpCode),
-					EUExCallback.F_C_INT, Integer.parseInt(String.valueOf(res)));
+                    EUExCallback.F_C_INT, Integer.parseInt(String.valueOf(res)));
 		} else {
 			errorCallback(
-					Integer.parseInt(inOpCode),
-					EUExCallback.F_E_UEXFILEMGR_GETFILESIZE_1,
-					ResoureFinder.getInstance().getString(mContext,
-							"error_parameter"));
+                    Integer.parseInt(inOpCode),
+                    EUExCallback.F_E_UEXFILEMGR_GETFILESIZE_1,
+                    ResoureFinder.getInstance().getString(mContext,
+                            "error_parameter"));
 		}
 
 	}
@@ -814,14 +820,14 @@ public class EUExFileMgr extends EUExBase {
 		if (object != null) {
 			String res = object.getFilePath();
 			jsCallback(F_CALLBACK_NAME_GETFILEPATH, Integer.parseInt(inOpCode),
-					EUExCallback.F_C_TEXT, res);
+                    EUExCallback.F_C_TEXT, res);
 		} else {
 
 			errorCallback(
-					Integer.parseInt(inOpCode),
-					EUExCallback.F_E_UEXFILEMGR_GETFILEPATH_1,
-					ResoureFinder.getInstance().getString(mContext,
-							"error_parameter"));
+                    Integer.parseInt(inOpCode),
+                    EUExCallback.F_E_UEXFILEMGR_GETFILEPATH_1,
+                    ResoureFinder.getInstance().getString(mContext,
+                            "error_parameter"));
 		}
 
 	}
@@ -844,10 +850,10 @@ public class EUExFileMgr extends EUExBase {
 		}
 		if(parm.length==2){
 			String inCallBack=parm[1];
-			jsCallback("uexFileMgr."+inCallBack,0, EUExCallback.F_C_TEXT,inPath);
+			jsCallback("uexFileMgr." + inCallBack, 0, EUExCallback.F_C_TEXT, inPath);
 		}else{
 			jsCallback(F_CALLBACK_NAME_GETFILEREALPATH, 0, EUExCallback.F_C_TEXT,
-					inPath);	
+                    inPath);
 		}
 
 	}
@@ -862,10 +868,10 @@ public class EUExFileMgr extends EUExBase {
 			object.close();
 		} else {
 			errorCallback(
-					Integer.parseInt(inOpCode),
-					EUExCallback.F_E_UEXFILEMGR_CLOSEFILE_1,
-					ResoureFinder.getInstance().getString(mContext,
-							"error_parameter"));
+                    Integer.parseInt(inOpCode),
+                    EUExCallback.F_E_UEXFILEMGR_CLOSEFILE_1,
+                    ResoureFinder.getInstance().getString(mContext,
+                            "error_parameter"));
 		}
 
 	}
@@ -880,14 +886,14 @@ public class EUExFileMgr extends EUExBase {
 			long res = object.getreaderOffset();
 
 			jsCallback(F_CALLBACK_NAME_GETREADEROFFSET,
-					Integer.parseInt(inOpCode), EUExCallback.F_C_INT,
-					Integer.parseInt(String.valueOf(res)));
+                    Integer.parseInt(inOpCode), EUExCallback.F_C_INT,
+                    Integer.parseInt(String.valueOf(res)));
 		} else {
 			errorCallback(
-					Integer.parseInt(inOpCode),
-					EUExCallback.F_E_UEXFILEMGR_GETREADEROFFSET_1,
-					ResoureFinder.getInstance().getString(mContext,
-							"error_parameter"));
+                    Integer.parseInt(inOpCode),
+                    EUExCallback.F_E_UEXFILEMGR_GETREADEROFFSET_1,
+                    ResoureFinder.getInstance().getString(mContext,
+                            "error_parameter"));
 		}
 
 	}
@@ -903,10 +909,10 @@ public class EUExFileMgr extends EUExBase {
 		EUExFile object = objectMap.get(Integer.parseInt(inOpCode));
 		if (object != null) {
 			String res = object.readerPercent(Integer.parseInt(inPercent),
-					Integer.parseInt(inLen));
+                    Integer.parseInt(inLen));
 
 			jsCallback(F_CALLBACK_NAME_READPERCENT, Integer.parseInt(inOpCode),
-					EUExCallback.F_C_TEXT, res);
+                    EUExCallback.F_C_TEXT, res);
 
 		}
 
@@ -925,7 +931,7 @@ public class EUExFileMgr extends EUExBase {
 			String res = object.readerNext(Integer.parseInt(inLen));
 
 			jsCallback(F_CALLBACK_NAME_READNEXT, Integer.parseInt(inOpCode),
-					EUExCallback.F_C_TEXT, res);
+                    EUExCallback.F_C_TEXT, res);
 
 		}
 
@@ -995,7 +1001,7 @@ public class EUExFileMgr extends EUExBase {
 			return;
 		}
 		if (testNull(mBrwView.getCurrentWidget(), inPath,
-				Integer.parseInt(inOpCode))) {
+                Integer.parseInt(inOpCode))) {
 			jsCallback(F_CALLBACK_NAME_OPENSECURE, Integer.parseInt(inOpCode),
 					EUExCallback.F_C_INT, EUExCallback.F_C_FAILED);
 			return;
@@ -1131,7 +1137,7 @@ public class EUExFileMgr extends EUExBase {
 			time = EUExUtil.getString("plugin_file_not_exist");
 		}
 		jsCallback(F_CALLBACK_NAME_GETFILECREATETIME, Integer.parseInt(inOpCode),
-				EUExCallback.F_C_TEXT, time);
+                EUExCallback.F_C_TEXT, time);
 	}
 
 	@Override
@@ -1149,37 +1155,37 @@ public class EUExFileMgr extends EUExBase {
         ((Activity)mContext).runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                String jsonString= params[0];
-                String oldFilePath=null;
-                String newPath=null;
-                JSONObject resultJson=new JSONObject();
-                String result="1";
+                String jsonString = params[0];
+                String oldFilePath = null;
+                String newPath = null;
+                JSONObject resultJson = new JSONObject();
+                String result = "1";
                 try {
-                    JSONObject jsonObject=new JSONObject(jsonString);
-                    oldFilePath=jsonObject.optString("oldFilePath");
-                    newPath=jsonObject.optString("newFilePath");
+                    JSONObject jsonObject = new JSONObject(jsonString);
+                    oldFilePath = jsonObject.optString("oldFilePath");
+                    newPath = jsonObject.optString("newFilePath");
                 } catch (JSONException e) {
 
                 }
-                if (!TextUtils.isEmpty(oldFilePath)&&!TextUtils.isEmpty(newPath)){
+                if (!TextUtils.isEmpty(oldFilePath) && !TextUtils.isEmpty(newPath)) {
                     oldFilePath = BUtility.makeRealPath(
                             BUtility.makeUrl(mBrwView.getCurrentUrl(), oldFilePath),
                             mBrwView.getCurrentWidget().m_widgetPath,
                             mBrwView.getCurrentWidget().m_wgtType);
-                    newPath= BUtility.makeRealPath(
+                    newPath = BUtility.makeRealPath(
                             BUtility.makeUrl(mBrwView.getCurrentUrl(), newPath),
                             mBrwView.getCurrentWidget().m_widgetPath,
                             mBrwView.getCurrentWidget().m_wgtType);
-                    File oldFile=new File(oldFilePath);
-                    File newFile=new File(newPath);
+                    File oldFile = new File(oldFilePath);
+                    File newFile = new File(newPath);
                     if (!oldFile.renameTo(newFile)) {
-                        result="0";
+                        result = "0";
                     }
-                }else{
-                    result="0";
+                } else {
+                    result = "0";
                 }
                 try {
-                    resultJson.put("result",result);
+                    resultJson.put("result", result);
                 } catch (JSONException e) {
                 }
                 String js = SCRIPT_HEADER + "if(" + F_CALLBACK_NAME_RENAMEFILE + "){"
@@ -1190,5 +1196,341 @@ public class EUExFileMgr extends EUExBase {
 
     }
 
+    public void search(String[] params) {
+        if (params == null || params.length < 1) {
+            errorCallback(0, 0, "error params!");
+            return;
+        }
+        Message msg = new Message();
+        msg.obj = this;
+        msg.what = MSG_SEARCH;
+        Bundle bd = new Bundle();
+        bd.putStringArray(BUNDLE_DATA, params);
+        msg.setData(bd);
+        mHandler.sendMessage(msg);
+    }
+
+    public void searchMsg(String[] params) {
+        if (params.length < 1) {
+            Toast.makeText(m_context, finder.getString("plugin_fileMgr_invalid_params"), Toast.LENGTH_SHORT).show();
+            return;
+        }
+        try {
+            JSONObject jsonObject = new JSONObject(params[0]);
+            String path = jsonObject.getString("path");
+            int option = 0;
+            JSONArray keywordsArray = null;
+            JSONArray suffixes = null;
+
+            if (jsonObject.has("option")) {
+                option = jsonObject.getInt("option");
+            }
+            if (jsonObject.has("keywords")) {
+                keywordsArray = jsonObject.getJSONArray("keywords");
+            }
+            if (jsonObject.has("suffixes")) {
+                suffixes = jsonObject.getJSONArray("suffixes");
+            }
+
+            final String realPath = BUtility.makeRealPath(
+                    BUtility.makeUrl(mBrwView.getCurrentUrl(), path),
+                    mBrwView.getCurrentWidget().m_widgetPath,
+                    mBrwView.getCurrentWidget().m_wgtType);
+            final int optionTemp = option;
+            final JSONArray keywordsArrayTemp = keywordsArray;
+            final JSONArray suffixesTemp = suffixes;
+            JSONObject resultJson = searchFile(realPath, optionTemp, keywordsArrayTemp, suffixesTemp);
+            String js = SCRIPT_HEADER + "if(" + F_CALLBACK_NAME_SEARCH + "){"
+                    + F_CALLBACK_NAME_SEARCH + "('" + resultJson.toString() + "');}";
+            onCallback(js);
+
+        } catch (JSONException e) {
+            Toast.makeText(m_context, finder.getString("plugin_fileMgr_json_format_error"), Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onHandleMessage(Message message) {
+        if(message == null){
+            return;
+        }
+        Bundle bundle=message.getData();
+        switch (message.what) {
+            case MSG_SEARCH:
+                searchMsg(bundle.getStringArray(BUNDLE_DATA));
+                break;
+            default:
+                super.onHandleMessage(message);
+        }
+    }
+
+
+
+    public JSONObject searchFile (String path, int option, JSONArray keywords, JSONArray suffixes) {
+        JSONObject jsonObject = new JSONObject();
+        try {
+            ArrayList<String> fileList = new ArrayList<String>();
+            //如果前端路径写的是 res://转换后 路径为widget/wgtRes/ ,如果不把最后一个/去掉，会导致getAssets().list(path)在有文件的情况下返回为空
+            if (path.endsWith("/")) {
+               path =  path.substring(0, path.lastIndexOf("/"));
+            }
+            String rootPath = path;
+            switch (option) {
+                case 0: //搜索当前目录下的文件
+                    getFilesInCurrentDir(path, fileList, suffixes, keywords, false, false);
+                    break;
+                case 1:
+                    //当suffixes存在时，仅搜索文件
+                    if (suffixes != null && suffixes.length() > 0) {
+                        getFilesInCurrentDir(path, fileList, suffixes, keywords, false, false);
+                    } else { //搜索包含文件夹
+                        getFilesInCurrentDir(path, fileList, suffixes, keywords, false, true);
+                    }
+                    break;
+                case 2: //精确匹配 只搜索文件名恰为keyword的文件, 不含文件夹
+                    //此时，keywords不能为空
+                    if (keywords == null || keywords.length() == 0) {
+                        Toast.makeText(m_context, finder.getString("plugin_fileMgr_need_keywords"), Toast.LENGTH_SHORT).show();
+                        jsonObject.put("isSuccess", false);
+                        return jsonObject;
+                    }
+                    getFilesInCurrentDir(path, fileList, suffixes, keywords, true, false);
+                    break;
+                case 3: //精确匹配，同时包含文件夹
+                    if (keywords == null || keywords.length() == 0) {
+                        Toast.makeText(m_context, finder.getString("plugin_fileMgr_need_keywords"), Toast.LENGTH_SHORT).show();
+                        jsonObject.put("isSuccess", false);
+                        return jsonObject;
+                    }
+                    getFilesInCurrentDir(path, fileList, suffixes, keywords, true, true);
+                    break;
+                case 4: //递归搜索，只返回文件
+                    getAllFiles(path, fileList, suffixes, keywords, false, false);
+                    break;
+                case 5: //递归搜索，返回结果包含文件和文件夹
+                    getAllFiles(path, fileList, suffixes, keywords, false, true);
+                    break;
+                case 6://递归搜索，返回结果包含文件，且精确匹配
+                    if (keywords == null || keywords.length() == 0) {
+                        Toast.makeText(m_context, finder.getString("plugin_fileMgr_need_keywords"), Toast.LENGTH_SHORT).show();
+                        jsonObject.put("isSuccess", false);
+                        return jsonObject;
+                    }
+                    getAllFiles(path, fileList, suffixes, keywords, true, true);
+                    break;
+                case 7: //递归搜索，返回结果包含文件，文件夹，且精确匹配
+                    if (keywords == null || keywords.length() == 0) {
+                        Toast.makeText(m_context, finder.getString("plugin_fileMgr_need_keywords"), Toast.LENGTH_SHORT).show();
+                        jsonObject.put("isSuccess", false);
+                        return jsonObject;
+                    }
+                    getAllFiles(path, fileList, suffixes, keywords, true, true);
+                    break;
+            }
+            JSONArray jsonArray = new JSONArray();
+            for (int i = 0; i < fileList.size(); i ++) {
+                jsonArray.put(i, fileList.get(i).replace(rootPath + "/", "")); //去掉传进来的目录
+            }
+            jsonObject.put("result", jsonArray);
+            jsonObject.put("isSuccess", true);
+            return jsonObject;
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        try {
+            jsonObject.put("isSuccess", false);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return jsonObject;
+    }
+
+    public void getFilesInCurrentDir(String path, ArrayList<String> fileList, JSONArray suffixes, JSONArray keywords,
+                                     Boolean isKeywordMatchExactly, boolean isContainDirectory) throws  JSONException, IOException {
+        //assets目录下的
+        if (path.startsWith(RES_ROOT)) {
+            String fileNameList [] = m_context.getResources().getAssets().list(path);
+            //如果传进来的就是一个文件, 如果文件满足这个规则，就直接返回这个文件
+            if (fileNameList == null || fileNameList.length == 0 ) {
+                if (hasSuffix(path, suffixes) && hasKeywords(path, keywords, isKeywordMatchExactly)) {
+                    fileList.add(path);
+                }
+                return;
+            }
+            String[] filePaths = m_context.getResources().getAssets().list(path);
+            int len = filePaths.length;
+            for (int i = 0; i < len; i ++) {
+                if (hasSuffix(filePaths[i], suffixes) && hasKeywords(path + "/" + filePaths[i], keywords, isKeywordMatchExactly)) {
+                    if (isContainDirectory) {
+                        fileList.add(path + "/" + filePaths[i]);
+                    } else {
+                        //如果是文件
+                        String [] temp = m_context.getResources().getAssets().list(path + "/" + filePaths[i]);
+                        if (temp == null || temp.length == 0) {
+                            fileList.add(path + "/" + filePaths[i]);
+                        }
+                    }
+                }
+            }
+        } else {
+            File file = new File(path);
+            if (!file.isDirectory()) {
+                if(hasSuffix(file.getName(), suffixes) && hasKeywords(file.getAbsolutePath(), keywords, isKeywordMatchExactly)) {
+                    fileList.add(file.getAbsolutePath());
+                }
+                return;
+            }
+            File [] files = new File(path).listFiles();
+            for (File fileTemp : files) {
+                if(hasSuffix(fileTemp.getName(), suffixes) && hasKeywords(fileTemp.getAbsolutePath(), keywords, isKeywordMatchExactly)) {
+                    if(isContainDirectory) {
+                        fileList.add(fileTemp.getAbsolutePath());
+                    } else {
+                        if(!fileTemp.isDirectory()) {
+                            fileList.add(fileTemp.getAbsolutePath());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public void getAllFiles(String path, ArrayList<String> fileList, JSONArray suffixes, JSONArray keywords,
+                            boolean isKeywordMatchExactly, boolean isContainDirectory) throws JSONException, IOException {
+        if (path.startsWith(RES_ROOT)) {
+            getAllFilesInAssets(path, fileList,suffixes, keywords, isKeywordMatchExactly, isContainDirectory);
+        } else {
+            getAllFilesInSDCard(new File(path), fileList,suffixes, keywords, isKeywordMatchExactly, isContainDirectory);
+        }
+    }
+
+    /**
+     * 递归遍历某个目录下的文件
+     * @param dir   文件目录
+     * @param list   返回的列表
+     * @param suffixes   文件后缀名
+     * @param keywords   匹配的关键字
+     * @param isKeywordMatchExactly   关键字是否严格匹配
+     * @param isContainDirectory    匹配时是否考虑目录
+     * @throws JSONException
+     */
+    public void getAllFilesInSDCard(File dir, ArrayList<String> list, JSONArray suffixes, JSONArray keywords,
+                                    boolean isKeywordMatchExactly, boolean isContainDirectory) throws JSONException, IOException {
+        if (!dir.isDirectory()) {
+            if(hasSuffix(dir.getName(), suffixes) && hasKeywords(dir.getAbsolutePath(), keywords, isKeywordMatchExactly)) {
+                list.add(dir.getAbsolutePath());
+            }
+            return;
+        }
+
+        File [] fs = dir.listFiles();
+        for (File file : fs) {
+            if (file.isDirectory()) {
+                if (isContainDirectory) {
+                    if (hasSuffix(file.getName(), suffixes) && hasKeywords(file.getAbsolutePath(), keywords, isKeywordMatchExactly)) {
+                        list.add(file.getAbsolutePath() + "/");
+                    }
+                }
+                getAllFilesInSDCard(file, list, suffixes, keywords, isKeywordMatchExactly, isContainDirectory);
+            } else {
+                if (hasSuffix(file.getName(), suffixes) && hasKeywords(file.getAbsolutePath(), keywords, isKeywordMatchExactly)) {
+                    list.add(file.getAbsolutePath());
+                }
+            }
+        }
+    }
+
+    /**
+     * 递归遍历assets下的所有文件
+     * @param path  assets下面的某个文件目录
+     * @param list  符合要求的文件名列表
+     * @param suffixes  文件后缀名
+     * @param keywords  匹配的关键字
+     * @param isKeywordMatchExactly  关键字是否严格匹配
+     * @param isContainDirectory  匹配时是否考虑目录
+     * @throws JSONException
+     * @throws IOException
+     */
+    public void getAllFilesInAssets(String path, ArrayList<String> list, JSONArray suffixes, JSONArray keywords,
+                                    boolean isKeywordMatchExactly, boolean isContainDirectory) throws JSONException,IOException{
+        String fileNameList [] = m_context.getResources().getAssets().list(path);
+        //如果传进来的就是一个文件, 如果文件满足这个规则，就直接返回这个文件
+        if (fileNameList == null || fileNameList.length == 0 )  {
+            if (hasSuffix(path, suffixes) && hasKeywords(path, keywords, false)) {
+                list.add(path);
+            }
+            return;
+        }
+        for (int i = 0; i < fileNameList.length; i++) {
+            String strTemp [] = m_context.getResources().getAssets().list(path + "/" + fileNameList[i]);
+            //如果是文件
+            if (strTemp == null || strTemp.length == 0) {
+                if (hasSuffix(fileNameList[i], suffixes) && hasKeywords(path + "/" +fileNameList[i], keywords, isKeywordMatchExactly)) {
+                    list.add(path + "/" + fileNameList[i]);
+                }
+            } else {
+                if (isContainDirectory) {
+                    if (hasSuffix(fileNameList[i], suffixes) && hasKeywords(path + "/" + fileNameList[i], keywords, isKeywordMatchExactly)) {
+                        list.add(path + "/" + fileNameList[i] + "/");
+                    }
+                }
+                getAllFilesInAssets(path + "/" + fileNameList[i], list, suffixes, keywords, isKeywordMatchExactly, isContainDirectory);
+            }
+        }
+
+    }
+
+    public boolean hasSuffix(String fileName, JSONArray suffixArray) throws JSONException {
+        if (suffixArray == null || suffixArray.length() == 0) {
+            return true;
+        }
+        int len = suffixArray.length();
+        for (int i = 0; i < len; i ++) {
+            if (fileName.endsWith(suffixArray.getString(i))) {
+                return true;
+            }
+        }
+        return false;
+    }
+    //path需要文件的绝对路径，针对assets目录下文件，path 以 widget/wgtRes开头
+    public boolean hasKeywords(String path, JSONArray keywords, boolean isExactly) throws JSONException, IOException {
+        if (keywords == null || keywords.length() == 0) {
+            return true;
+        }
+        //获取目录或文件的文件名
+        String fileName = "";
+        if (path.startsWith(RES_ROOT)) {
+            String strTemp [] = m_context.getResources().getAssets().list(path);
+            //如果是文件
+            if (strTemp == null || strTemp.length == 0) {
+                fileName = path.substring(path.lastIndexOf("/") + 1, path.lastIndexOf('.'));
+            } else {
+                fileName = path.substring(path.lastIndexOf("/") + 1, path.length());
+            }
+        } else {
+            File f = new File(path);
+            if (!f.isDirectory()) {
+                fileName = path.substring(path.lastIndexOf("/") + 1, path.lastIndexOf('.'));
+            } else {
+                fileName = path.substring(path.lastIndexOf("/") + 1, path.length());
+            }
+        }
+        int len = keywords.length();
+        for (int i = 0; i < len; i ++) {
+            if (isExactly) {
+                if (fileName.equals(keywords.getString(i))) {
+                    return true;
+                }
+            } else {
+                if (fileName.contains(keywords.getString(i))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
 }
