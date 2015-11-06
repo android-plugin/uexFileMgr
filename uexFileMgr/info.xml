@@ -3,7 +3,7 @@
     <plugin
         uexName="uexFileMgr" version="3.0.10" build="10">
         <info>10.添加文件搜索接口</info>
-        <info>9.修复闪退的bug</info>
+        <build>9.修复闪退的bug</build>
         <build>8.国际化</build>
         <build>7.修改接口getFileRealPath,支持回调方法名称的传入</build>
         <build>6.新增getFileListByPath方法获取指定目录中的文件列表</build>
