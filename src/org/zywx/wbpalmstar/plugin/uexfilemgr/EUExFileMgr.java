@@ -849,8 +849,9 @@ public class EUExFileMgr extends EUExBase {
 			flag = false;
 		}
 		if(parm.length==2){
-			String inCallBack=parm[1];
-			jsCallback("uexFileMgr." + inCallBack, 0, EUExCallback.F_C_TEXT, inPath);
+			String inCallBack = "uexFileMgr." + parm[1];
+			onCallback(SCRIPT_HEADER + "if(" + inCallBack + "){"
+                    + inCallBack + "('" + inPath + "');}");
 		}else{
 			jsCallback(F_CALLBACK_NAME_GETFILEREALPATH, 0, EUExCallback.F_C_TEXT,
                     inPath);
