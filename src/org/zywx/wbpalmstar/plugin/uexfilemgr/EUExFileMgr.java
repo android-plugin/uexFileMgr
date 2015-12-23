@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Message;
 import android.text.TextUtils;
@@ -15,10 +16,13 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.zywx.wbpalmstar.base.BUtility;
 import org.zywx.wbpalmstar.base.ResoureFinder;
+import org.zywx.wbpalmstar.engine.DataHelper;
 import org.zywx.wbpalmstar.engine.EBrowserView;
 import org.zywx.wbpalmstar.engine.universalex.EUExBase;
 import org.zywx.wbpalmstar.engine.universalex.EUExCallback;
 import org.zywx.wbpalmstar.engine.universalex.EUExUtil;
+import org.zywx.wbpalmstar.plugin.uexfilemgr.vo.FileSizeDataVO;
+import org.zywx.wbpalmstar.plugin.uexfilemgr.vo.ResultFileSizeVO;
 import org.zywx.wbpalmstar.widgetone.dataservice.WWidgetData;
 
 import java.io.File;
@@ -79,6 +83,7 @@ public class EUExFileMgr extends EUExBase {
     public static final String RES_ROOT = "widget/wgtRes";
     private static final String BUNDLE_DATA = "data";
     private static final int MSG_SEARCH = 1;
+    private static final int CALLBACK_FILE_SIZE_TO_JS = 111;
 
 
     private HashMap<Integer, EUExFile> objectMap = new HashMap<Integer, EUExFile>();
@@ -1033,6 +1038,7 @@ public class EUExFileMgr extends EUExBase {
 			}
 		}
 	}
+
 	public void getFileListByPath(String[] params) {
 		if (params.length < 1) {
 			Log.i("uexFileMgr", "getFileListByPath");
@@ -1090,6 +1096,7 @@ public class EUExFileMgr extends EUExBase {
 			}
 		}).start();
 	}
+
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		JSONObject jobj = new JSONObject();
@@ -1248,6 +1255,74 @@ public class EUExFileMgr extends EUExBase {
         } catch (JSONException e) {
             Toast.makeText(m_context, finder.getString("plugin_fileMgr_json_format_error"), Toast.LENGTH_SHORT).show();
             e.printStackTrace();
+        }
+    }
+
+    public void getFileSizeByPath(String[] params) {
+        if (params == null || params.length < 1) {
+            ResultFileSizeVO result = new ResultFileSizeVO();
+            result.setErrorCode(JsConst.RESULT_FILE_SIZE_ERROR_PARAM);
+            callBackPluginJs(JsConst.CALLBACK_GET_FILE_SIZE_BY_PATH,
+                    DataHelper.gson.toJson(result));
+            return;
+        }
+        FileSizeDataVO dataVO = DataHelper.gson.fromJson(params[0], FileSizeDataVO.class);
+        if (dataVO != null && !TextUtils.isEmpty(dataVO.getPath())){
+            String filePath = BUtility.makeRealPath(
+                    BUtility.makeUrl(mBrwView.getCurrentUrl(), dataVO.getPath()),
+                    mBrwView.getCurrentWidget().m_widgetPath,
+                    mBrwView.getCurrentWidget().m_wgtType);
+            String unit = dataVO.getUnit();
+            String id = dataVO.getId();
+            GetFileSizeAsyncTask task = new GetFileSizeAsyncTask();
+            task.execute(filePath, unit, id);
+        }
+
+    }
+
+    private void callBackPluginJs(String methodName, String jsonData){
+        String js = SCRIPT_HEADER + "if(" + methodName + "){"
+                + methodName + "('" + jsonData + "');}";
+        onCallback(js);
+    }
+
+    private class GetFileSizeAsyncTask extends AsyncTask<String, String, ResultFileSizeVO>{
+
+        @Override
+        protected ResultFileSizeVO doInBackground(String... params) {
+            String filePath = params[0];
+            String unit = params[1];
+            String id = params[2];
+            ResultFileSizeVO result = new ResultFileSizeVO();
+            result.setId(id);
+            File file = new File(filePath);
+            if (!file.exists()){
+                result.setErrorCode(JsConst.RESULT_FILE_SIZE_FILE_NOT_EXIST);
+            }else{
+                try {
+                    long size;
+                    if (file.isDirectory()){
+                        size = FileUtility.getFileSizes(file);
+                    }else{
+                        size = FileUtility.getFileSize(file);
+                    }
+                    result.setErrorCode(JsConst.RESULT_FILE_SIZE_SUCCESS);
+                    result.setData(String.valueOf(FileUtility.formetFileSize(size, unit)));
+                    result.setUnit(unit);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    result.setErrorCode(JsConst.RESULT_FILE_SIZE_UNKNOWN_ERROR);
+                }
+            }
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(ResultFileSizeVO result) {
+            if (result != null){
+                callBackPluginJs(JsConst.CALLBACK_GET_FILE_SIZE_BY_PATH,
+                        DataHelper.gson.toJson(result));
+            }
         }
     }
 
