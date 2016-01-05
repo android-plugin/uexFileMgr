@@ -165,6 +165,13 @@
 	function getFileListByPath() {
 		uexFileMgr.getFileListByPath(document.getElementById('list_FilePath').value);
 	}
+	function copyFile() {
+		var s = document.getElementById('srcFilePath').value;
+		var o = document.getElementById('objPath').value;
+		alert("s: "+s+"\no: "+o);
+		
+		uexFileMgr.copyFile('109',s,o);
+	}
 	window.uexOnload = function() {
 		uexWidgetOne.cbError = function(opCode, errorCode, errorInfo) {
 			alert(errorInfo);
@@ -556,6 +563,10 @@
 		uexFileMgr.cbGetFileSizeByPath = function(info){
 		    alert(info);
 		}
+		uexFileMgr.cbCopyFile = function(opCode, dataType, data){
+		    alert("opCode:"+opCode+",dataType:"+dataType+",data"+data);
+		    
+		}
 	}
 
     function getFileSizeByPath(){
@@ -713,6 +724,14 @@
             <span>23.获取文件大小</span>
             <input class="textbox" id="fileSize_id" type="text" value="wgt://">
             <input class="btn" type="button" value="获取文件大小" onclick="getFileSizeByPath()">
+            
+            <span>24.复制文件到文件夹</span>
+            <span>opid:109</span>
+            <span>需要复制的文件路径</span>
+            <input class="textbox" id="srcFilePath" type="text" value="res://1016.jpg">
+            <span>目标文件夹路径</span>
+			<input class="textbox" id="objPath" type="text" value="wgt://">
+            <input class="btn" type="button" value="复制文件" onclick="copyFile()">
 			<br>
 		</div>
 	</div>

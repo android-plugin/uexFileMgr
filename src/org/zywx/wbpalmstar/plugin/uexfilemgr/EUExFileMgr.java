@@ -26,10 +26,14 @@ import org.zywx.wbpalmstar.plugin.uexfilemgr.vo.ResultFileSizeVO;
 import org.zywx.wbpalmstar.widgetone.dataservice.WWidgetData;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -64,6 +68,7 @@ public class EUExFileMgr extends EUExBase {
 	private static final String F_CALLBACK_NAME_DELETEFILEBYPATH = "uexFileMgr.cbDeleteFileByPath";
 	private static final String F_CALLBACK_NAME_DELETEFILEBYID = "uexFileMgr.cbDeleteFileByID";
     private static final String F_CALLBACK_NAME_SEARCH = "uexFileMgr.cbSearch";
+    private static final String F_CALLBACK_NAME_COPYFILE = "uexFileMgr.cbCopyFile";
 
 	public static final int F_FILE_OPEN_MODE_READ = 0x1;
 	public static final int F_FILE_OPEN_MODE_WRITE = 0x2;
@@ -87,6 +92,7 @@ public class EUExFileMgr extends EUExBase {
 
 
     private HashMap<Integer, EUExFile> objectMap = new HashMap<Integer, EUExFile>();
+    private HashMap<Integer, String> copyMap = new HashMap<Integer, String>();
 	Context m_context;
 	private ResoureFinder finder;
 
@@ -1280,6 +1286,118 @@ public class EUExFileMgr extends EUExBase {
 
     }
 
+	/**
+	 * 复制一个文件
+	 * 
+	 * @param parm [0]:inOpCode id;[1]:srcFilePath 源文件路径;[2]:objPath 目标文件夹路径
+	 * 
+	 * @throws IOException
+	 * 
+	 */
+	public void copyFile(String[] parm) throws IOException {
+		if (parm.length != 3) {
+			return;
+		}
+		String inOpCode = parm[0], srcFilePath = parm[1], objPath = parm[2];
+		if (!BUtility.isNumeric(inOpCode)) {
+			return;
+		}
+
+		boolean flag = false;
+		if (srcFilePath.startsWith(BUtility.F_Widget_RES_SCHEMA)) {
+			flag = true;
+		}
+		String srcFileRealPath = BUtility.makeRealPath(BUtility.makeUrl(mBrwView.getCurrentUrl(), srcFilePath),
+				mBrwView.getCurrentWidget().m_widgetPath, mBrwView.getCurrentWidget().m_wgtType);
+		Log.i("srcFileRealPath", srcFileRealPath);
+		if (srcFileRealPath.startsWith(BUtility.F_Widget_RES_path)) {
+			flag = true;
+		}
+		File temp = new File(srcFileRealPath);
+		String objRealPath = BUtility.makeRealPath(BUtility.makeUrl(mBrwView.getCurrentUrl(), objPath),
+				mBrwView.getCurrentWidget().m_widgetPath, mBrwView.getCurrentWidget().m_wgtType);
+		Log.i("objRealPath", objRealPath + temp.getName());
+
+		FileInputStream fi = null;
+		FileOutputStream fo = null;
+		FileChannel in = null;
+		FileChannel out = null;
+
+		if (flag && srcFileRealPath != null && srcFileRealPath.startsWith(BUtility.F_Widget_RES_path)) {
+			InputStream in_a = null;
+			OutputStream out_a = null;
+			try {
+				in_a = mContext.getAssets().open(srcFileRealPath);
+				int length = in_a.available();
+				File outFile = new File(objRealPath + temp.getName());
+				out_a = new FileOutputStream(outFile);
+				byte[] buffer = new byte[1024];
+				int read;
+				while ((read = in_a.read(buffer)) != -1) {
+					out_a.write(buffer, 0, read);
+				}
+				if (in_a != null) {
+					in_a.close();
+					in_a = null;
+				}
+				if (out_a != null) {
+					out_a.flush();
+					out_a.close();
+					out_a = null;
+				}
+				File copied = new File(objRealPath + temp.getName());
+				if (copied.exists() && copied.length() == length) {
+					jsCallback(F_CALLBACK_NAME_COPYFILE, Integer.parseInt(inOpCode), EUExCallback.F_C_INT,
+							EUExCallback.F_C_SUCCESS);
+				} else {
+					jsCallback(F_CALLBACK_NAME_COPYFILE, Integer.parseInt(inOpCode), EUExCallback.F_C_INT,
+							EUExCallback.F_C_FAILED);
+				}
+			} catch (IOException e) {
+				Log.e("tag", "Failed to copy asset file: " + srcFileRealPath, e);
+				jsCallback(F_CALLBACK_NAME_COPYFILE, Integer.parseInt(inOpCode), EUExCallback.F_C_INT,
+						EUExCallback.F_C_FAILED);
+			}
+			flag = false;
+		} else {
+			try {
+				fi = new FileInputStream(srcFileRealPath);
+				fo = new FileOutputStream(objRealPath + temp.getName());
+				in = fi.getChannel();
+				out = fo.getChannel();
+				in.transferTo(0, in.size(), out);
+				if (in != null) {
+					in.close();
+					in = null;
+				}
+				if (out != null) {
+					out.close();
+					out = null;
+				}
+				if (fo != null) {
+					fo.close();
+					fo = null;
+				}
+				if (fi != null) {
+					fi.close();
+					fi = null;
+				}
+				File copied = new File(objRealPath + temp.getName());
+				if (copied.exists() && copied.length() == temp.length()) {
+					jsCallback(F_CALLBACK_NAME_COPYFILE, Integer.parseInt(inOpCode), EUExCallback.F_C_INT,
+							EUExCallback.F_C_SUCCESS);
+				} else {
+					jsCallback(F_CALLBACK_NAME_COPYFILE, Integer.parseInt(inOpCode), EUExCallback.F_C_INT,
+							EUExCallback.F_C_FAILED);
+				}
+			} catch (IOException e) {
+				Log.e("tag", "Failed to copy sdcard file: " + srcFileRealPath, e);
+				jsCallback(F_CALLBACK_NAME_COPYFILE, Integer.parseInt(inOpCode), EUExCallback.F_C_INT,
+						EUExCallback.F_C_FAILED);
+			}
+		}
+	}
+   
     private void callBackPluginJs(String methodName, String jsonData){
         String js = SCRIPT_HEADER + "if(" + methodName + "){"
                 + methodName + "('" + jsonData + "');}";
