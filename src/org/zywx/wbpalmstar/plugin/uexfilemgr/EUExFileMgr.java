@@ -849,10 +849,28 @@ public class EUExFileMgr extends EUExBase {
 		if(inPath.startsWith("res://")) {
 			flag = true;
 		}
-		inPath = BUtility.makeRealPath(
-				BUtility.makeUrl(mBrwView.getCurrentUrl(), inPath),
+		String m_indexUrl = mBrwView.getCurrentWidget().m_indexUrl;
+		String boxPathString = BUtility.makeRealPath("box://",
 				mBrwView.getCurrentWidget().m_widgetPath,
 				mBrwView.getCurrentWidget().m_wgtType);
+		if (m_indexUrl.contains("widget/plugin/")) {
+			String widgetPaTh = "";
+			if (checkAppStatus(mContext, mBrwView.getRootWidget().m_appId))
+				widgetPaTh = (boxPathString + "widget/plugin/"
+						+ mBrwView.getCurrentWidget().m_appId + File.separator);
+			else {
+				widgetPaTh = ("file:///android_asset/widget/plugin/"
+						+ mBrwView.getCurrentWidget().m_appId + File.separator);
+			}
+			inPath = BUtility.makeRealPath(
+					BUtility.makeUrl(mBrwView.getCurrentUrl(), inPath),
+					widgetPaTh, mBrwView.getCurrentWidget().m_wgtType);
+		} else {
+	    	inPath = BUtility.makeRealPath(
+					BUtility.makeUrl(mBrwView.getCurrentUrl(), inPath),
+					mBrwView.getCurrentWidget().m_widgetPath,
+					mBrwView.getCurrentWidget().m_wgtType);
+	    }
 		if (flag && inPath != null
 				&& inPath.startsWith(BUtility.F_Widget_RES_path)) {
 			// 判断如果是解析res://协议并且解析出来的路径以widget/wgtRes/开头（即这是一个主应用没有开启增量更新的情况），就认为是assets路径
@@ -1726,5 +1744,26 @@ public class EUExFileMgr extends EUExBase {
         }
         return false;
     }
+    
+	private boolean checkAppStatus(Context inActivity, String appId) {
+		try {
+			String appstatus = ResoureFinder.getInstance().getString(
+					inActivity, "appstatus");
+			byte[] appstatusToByte = PEncryption.hexStringToBinary(appstatus);
+			String appstatusDecrypt = new String(PEncryption.os_decrypt(
+					appstatusToByte, appstatusToByte.length, appId));
+			String[] appstatuss = appstatusDecrypt.split(",");
+			if ((appstatuss == null) || (appstatuss.length == 0)) {
+				return false;
+			}
+			if ("1".equals(appstatuss[9]))
+				return true;
+		} catch (Exception e) {
+			Log.w("uexFileMgr_", e.getMessage(), e);
+		}
+		return false;
+	}
+    
+    
 
 }
