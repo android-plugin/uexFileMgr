@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Message;
 import android.text.TextUtils;
@@ -15,17 +16,24 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.zywx.wbpalmstar.base.BUtility;
 import org.zywx.wbpalmstar.base.ResoureFinder;
+import org.zywx.wbpalmstar.engine.DataHelper;
 import org.zywx.wbpalmstar.engine.EBrowserView;
 import org.zywx.wbpalmstar.engine.universalex.EUExBase;
 import org.zywx.wbpalmstar.engine.universalex.EUExCallback;
 import org.zywx.wbpalmstar.engine.universalex.EUExUtil;
+import org.zywx.wbpalmstar.plugin.uexfilemgr.vo.FileSizeDataVO;
+import org.zywx.wbpalmstar.plugin.uexfilemgr.vo.ResultFileSizeVO;
 import org.zywx.wbpalmstar.widgetone.dataservice.WWidgetData;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -60,6 +68,7 @@ public class EUExFileMgr extends EUExBase {
 	private static final String F_CALLBACK_NAME_DELETEFILEBYPATH = "uexFileMgr.cbDeleteFileByPath";
 	private static final String F_CALLBACK_NAME_DELETEFILEBYID = "uexFileMgr.cbDeleteFileByID";
     private static final String F_CALLBACK_NAME_SEARCH = "uexFileMgr.cbSearch";
+    private static final String F_CALLBACK_NAME_COPYFILE = "uexFileMgr.cbCopyFile";
 
 	public static final int F_FILE_OPEN_MODE_READ = 0x1;
 	public static final int F_FILE_OPEN_MODE_WRITE = 0x2;
@@ -79,9 +88,11 @@ public class EUExFileMgr extends EUExBase {
     public static final String RES_ROOT = "widget/wgtRes";
     private static final String BUNDLE_DATA = "data";
     private static final int MSG_SEARCH = 1;
+    private static final int CALLBACK_FILE_SIZE_TO_JS = 111;
 
 
     private HashMap<Integer, EUExFile> objectMap = new HashMap<Integer, EUExFile>();
+    private HashMap<Integer, String> copyMap = new HashMap<Integer, String>();
 	Context m_context;
 	private ResoureFinder finder;
 
@@ -838,10 +849,28 @@ public class EUExFileMgr extends EUExBase {
 		if(inPath.startsWith("res://")) {
 			flag = true;
 		}
-		inPath = BUtility.makeRealPath(
-				BUtility.makeUrl(mBrwView.getCurrentUrl(), inPath),
+		String m_indexUrl = mBrwView.getCurrentWidget().m_indexUrl;
+		String boxPathString = BUtility.makeRealPath("box://",
 				mBrwView.getCurrentWidget().m_widgetPath,
 				mBrwView.getCurrentWidget().m_wgtType);
+		if (m_indexUrl.contains("widget/plugin/")) {
+			String widgetPaTh = "";
+			if (checkAppStatus(mContext, mBrwView.getRootWidget().m_appId))
+				widgetPaTh = (boxPathString + "widget/plugin/"
+						+ mBrwView.getCurrentWidget().m_appId + File.separator);
+			else {
+				widgetPaTh = ("file:///android_asset/widget/plugin/"
+						+ mBrwView.getCurrentWidget().m_appId + File.separator);
+			}
+			inPath = BUtility.makeRealPath(
+					BUtility.makeUrl(mBrwView.getCurrentUrl(), inPath),
+					widgetPaTh, mBrwView.getCurrentWidget().m_wgtType);
+		} else {
+	    	inPath = BUtility.makeRealPath(
+					BUtility.makeUrl(mBrwView.getCurrentUrl(), inPath),
+					mBrwView.getCurrentWidget().m_widgetPath,
+					mBrwView.getCurrentWidget().m_wgtType);
+	    }
 		if (flag && inPath != null
 				&& inPath.startsWith(BUtility.F_Widget_RES_path)) {
 			// 判断如果是解析res://协议并且解析出来的路径以widget/wgtRes/开头（即这是一个主应用没有开启增量更新的情况），就认为是assets路径
@@ -1033,6 +1062,7 @@ public class EUExFileMgr extends EUExBase {
 			}
 		}
 	}
+
 	public void getFileListByPath(String[] params) {
 		if (params.length < 1) {
 			Log.i("uexFileMgr", "getFileListByPath");
@@ -1090,6 +1120,7 @@ public class EUExFileMgr extends EUExBase {
 			}
 		}).start();
 	}
+
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data) {
 		JSONObject jobj = new JSONObject();
@@ -1248,6 +1279,186 @@ public class EUExFileMgr extends EUExBase {
         } catch (JSONException e) {
             Toast.makeText(m_context, finder.getString("plugin_fileMgr_json_format_error"), Toast.LENGTH_SHORT).show();
             e.printStackTrace();
+        }
+    }
+
+    public void getFileSizeByPath(String[] params) {
+        if (params == null || params.length < 1) {
+            ResultFileSizeVO result = new ResultFileSizeVO();
+            result.setErrorCode(JsConst.RESULT_FILE_SIZE_ERROR_PARAM);
+            callBackPluginJs(JsConst.CALLBACK_GET_FILE_SIZE_BY_PATH,
+                    DataHelper.gson.toJson(result));
+            return;
+        }
+        FileSizeDataVO dataVO = DataHelper.gson.fromJson(params[0], FileSizeDataVO.class);
+        if (dataVO != null && !TextUtils.isEmpty(dataVO.getPath())){
+            String filePath = BUtility.makeRealPath(
+                    BUtility.makeUrl(mBrwView.getCurrentUrl(), dataVO.getPath()),
+                    mBrwView.getCurrentWidget().m_widgetPath,
+                    mBrwView.getCurrentWidget().m_wgtType);
+            String unit = dataVO.getUnit();
+            String id = dataVO.getId();
+            GetFileSizeAsyncTask task = new GetFileSizeAsyncTask();
+            task.execute(filePath, unit, id);
+        }
+
+    }
+
+	/**
+	 * 复制一个文件
+	 * 
+	 * @param parm [0]:inOpCode id;[1]:srcFilePath 源文件路径;[2]:objPath 目标文件夹路径
+	 * 
+	 * @throws IOException
+	 * 
+	 */
+	public void copyFile(String[] parm) throws IOException {
+		if (parm.length != 3) {
+			return;
+		}
+		String inOpCode = parm[0], srcFilePath = parm[1], objPath = parm[2];
+		if (!BUtility.isNumeric(inOpCode)) {
+			return;
+		}
+
+		boolean flag = false;
+		if (srcFilePath.startsWith(BUtility.F_Widget_RES_SCHEMA)) {
+			flag = true;
+		}
+		String srcFileRealPath = BUtility.makeRealPath(BUtility.makeUrl(mBrwView.getCurrentUrl(), srcFilePath),
+				mBrwView.getCurrentWidget().m_widgetPath, mBrwView.getCurrentWidget().m_wgtType);
+		Log.i("srcFileRealPath", srcFileRealPath);
+		if (srcFileRealPath.startsWith(BUtility.F_Widget_RES_path)) {
+			flag = true;
+		}
+		File temp = new File(srcFileRealPath);
+		String objRealPath = BUtility.makeRealPath(BUtility.makeUrl(mBrwView.getCurrentUrl(), objPath),
+				mBrwView.getCurrentWidget().m_widgetPath, mBrwView.getCurrentWidget().m_wgtType);
+		Log.i("objRealPath", objRealPath + temp.getName());
+
+		FileInputStream fi = null;
+		FileOutputStream fo = null;
+		FileChannel in = null;
+		FileChannel out = null;
+
+		if (flag && srcFileRealPath != null && srcFileRealPath.startsWith(BUtility.F_Widget_RES_path)) {
+			InputStream in_a = null;
+			OutputStream out_a = null;
+			try {
+				in_a = mContext.getAssets().open(srcFileRealPath);
+				int length = in_a.available();
+				File outFile = new File(objRealPath + temp.getName());
+				out_a = new FileOutputStream(outFile);
+				byte[] buffer = new byte[1024];
+				int read;
+				while ((read = in_a.read(buffer)) != -1) {
+					out_a.write(buffer, 0, read);
+				}
+				if (in_a != null) {
+					in_a.close();
+					in_a = null;
+				}
+				if (out_a != null) {
+					out_a.flush();
+					out_a.close();
+					out_a = null;
+				}
+				File copied = new File(objRealPath + temp.getName());
+				if (copied.exists() && copied.length() == length) {
+					jsCallback(F_CALLBACK_NAME_COPYFILE, Integer.parseInt(inOpCode), EUExCallback.F_C_INT,
+							EUExCallback.F_C_SUCCESS);
+				} else {
+					jsCallback(F_CALLBACK_NAME_COPYFILE, Integer.parseInt(inOpCode), EUExCallback.F_C_INT,
+							EUExCallback.F_C_FAILED);
+				}
+			} catch (IOException e) {
+				Log.e("tag", "Failed to copy asset file: " + srcFileRealPath, e);
+				jsCallback(F_CALLBACK_NAME_COPYFILE, Integer.parseInt(inOpCode), EUExCallback.F_C_INT,
+						EUExCallback.F_C_FAILED);
+			}
+			flag = false;
+		} else {
+			try {
+				fi = new FileInputStream(srcFileRealPath);
+				fo = new FileOutputStream(objRealPath + temp.getName());
+				in = fi.getChannel();
+				out = fo.getChannel();
+				in.transferTo(0, in.size(), out);
+				if (in != null) {
+					in.close();
+					in = null;
+				}
+				if (out != null) {
+					out.close();
+					out = null;
+				}
+				if (fo != null) {
+					fo.close();
+					fo = null;
+				}
+				if (fi != null) {
+					fi.close();
+					fi = null;
+				}
+				File copied = new File(objRealPath + temp.getName());
+				if (copied.exists() && copied.length() == temp.length()) {
+					jsCallback(F_CALLBACK_NAME_COPYFILE, Integer.parseInt(inOpCode), EUExCallback.F_C_INT,
+							EUExCallback.F_C_SUCCESS);
+				} else {
+					jsCallback(F_CALLBACK_NAME_COPYFILE, Integer.parseInt(inOpCode), EUExCallback.F_C_INT,
+							EUExCallback.F_C_FAILED);
+				}
+			} catch (IOException e) {
+				Log.e("tag", "Failed to copy sdcard file: " + srcFileRealPath, e);
+				jsCallback(F_CALLBACK_NAME_COPYFILE, Integer.parseInt(inOpCode), EUExCallback.F_C_INT,
+						EUExCallback.F_C_FAILED);
+			}
+		}
+	}
+   
+    private void callBackPluginJs(String methodName, String jsonData){
+        String js = SCRIPT_HEADER + "if(" + methodName + "){"
+                + methodName + "('" + jsonData + "');}";
+        onCallback(js);
+    }
+
+    private class GetFileSizeAsyncTask extends AsyncTask<String, String, ResultFileSizeVO>{
+
+        @Override
+        protected ResultFileSizeVO doInBackground(String... params) {
+            String filePath = params[0];
+            String unit = params[1];
+            String id = params[2];
+            ResultFileSizeVO result = new ResultFileSizeVO();
+            result.setId(id);
+            File file = new File(filePath);
+            if (!file.exists()){
+                result.setErrorCode(JsConst.RESULT_FILE_SIZE_FILE_NOT_EXIST);
+            }else{
+                try {
+                    long size;
+                    if (file.isDirectory()){
+                        size = FileUtility.getFileSizes(file);
+                    }else{
+                        size = FileUtility.getFileSize(file);
+                    }
+                    result.setErrorCode(JsConst.RESULT_FILE_SIZE_SUCCESS);
+                    result.setData(String.valueOf(FileUtility.formetFileSize(size, unit)));
+                    result.setUnit(unit);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    result.setErrorCode(JsConst.RESULT_FILE_SIZE_UNKNOWN_ERROR);
+                }
+            }
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(ResultFileSizeVO result) {
+            if (result != null){
+                callBackPluginJs(JsConst.CALLBACK_GET_FILE_SIZE_BY_PATH,
+                        DataHelper.gson.toJson(result));
+            }
         }
     }
 
@@ -1533,5 +1744,26 @@ public class EUExFileMgr extends EUExBase {
         }
         return false;
     }
+    
+	private boolean checkAppStatus(Context inActivity, String appId) {
+		try {
+			String appstatus = ResoureFinder.getInstance().getString(
+					inActivity, "appstatus");
+			byte[] appstatusToByte = PEncryption.hexStringToBinary(appstatus);
+			String appstatusDecrypt = new String(PEncryption.os_decrypt(
+					appstatusToByte, appstatusToByte.length, appId));
+			String[] appstatuss = appstatusDecrypt.split(",");
+			if ((appstatuss == null) || (appstatuss.length == 0)) {
+				return false;
+			}
+			if ("1".equals(appstatuss[9]))
+				return true;
+		} catch (Exception e) {
+			Log.w("uexFileMgr_", e.getMessage(), e);
+		}
+		return false;
+	}
+    
+    
 
 }
