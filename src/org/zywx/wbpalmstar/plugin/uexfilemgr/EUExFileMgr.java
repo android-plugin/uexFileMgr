@@ -91,8 +91,8 @@ public class EUExFileMgr extends EUExBase {
     private static final int CALLBACK_FILE_SIZE_TO_JS = 111;
 
 
-    private HashMap<Integer, EUExFile> objectMap = new HashMap<Integer, EUExFile>();
-    private HashMap<Integer, String> copyMap = new HashMap<Integer, String>();
+    private HashMap<String, EUExFile> objectMap = new HashMap<String, EUExFile>();
+    private HashMap<String, String> copyMap = new HashMap<String, String>();
 	Context m_context;
 	private ResoureFinder finder;
 
@@ -104,18 +104,16 @@ public class EUExFileMgr extends EUExBase {
 
 	native static int encode_by_userkey();
 
-	private boolean testFileError(int type, int inOpCode, String path) {
+	private boolean testFileError(int type, String inOpCode, String path) {
 		switch (type) {
 		case EUExFile.F_ERROR_CREATEFILE:
-			errorCallback(
-					inOpCode,
-					EUExCallback.F_E_UEXFILEMGR_CREATEFILE_6,
-					ResoureFinder.getInstance().getString(mContext,
-							"error_parameter"));
+			errorCallback(inOpCode,
+			        EUExCallback.F_E_UEXFILEMGR_CREATEFILE_6,
+			        ResoureFinder.getInstance().getString(mContext,
+			                "error_parameter"));
 			return true;
 		case EUExFile.F_ERROR_FILE_NOT_EXIST:
-			errorCallback(
-					inOpCode,
+			errorCallback(inOpCode,
 					EUExCallback.F_E_UEXFILEMGR_OPENFILE_2,
 					ResoureFinder.getInstance().getString(mContext,
 							"error_file_does_not_exist"));
@@ -124,7 +122,7 @@ public class EUExFileMgr extends EUExBase {
 		return false;
 	}
 
-	private boolean testNull(WWidgetData wgtData, String path, int inOpCode) {
+	private boolean testNull(WWidgetData wgtData, String path) {
 
 		if (path == null || path.length() == 0) {
 			return true;
@@ -142,17 +140,16 @@ public class EUExFileMgr extends EUExBase {
 			return;
 		}
 		String inOpCode = parm[0], inPath = parm[1];
-		if (!BUtility.isNumeric(inOpCode)) {
-			return;
-		}
-		if (objectMap.containsKey(Integer.parseInt(inOpCode))) {
-			jsCallback(F_CALLBACK_NAME_CREATEFILE, Integer.parseInt(inOpCode),
+//		if (!BUtility.isNumeric(inOpCode)) {
+//			return;
+//		}
+		if (objectMap.containsKey(inOpCode)) {
+			jsCallback(F_CALLBACK_NAME_CREATEFILE, inOpCode,
 					EUExCallback.F_C_INT, EUExCallback.F_C_FAILED);
 			return;
 		}
-		if (testNull(mBrwView.getCurrentWidget(), inPath,
-				Integer.parseInt(inOpCode))) {
-			jsCallback(F_CALLBACK_NAME_CREATEFILE, Integer.parseInt(inOpCode),
+		if (testNull(mBrwView.getCurrentWidget(), inPath)) {
+			jsCallback(F_CALLBACK_NAME_CREATEFILE, inOpCode,
 					EUExCallback.F_C_INT, EUExCallback.F_C_FAILED);
 			return;
 		}
@@ -162,12 +159,11 @@ public class EUExFileMgr extends EUExBase {
 				mBrwView.getCurrentWidget().m_wgtType);
 		EUExFile uexFile = new EUExFile(F_TYPE_FILE, inPath,
 				F_FILE_OPEN_MODE_NEW, mContext,null);
-		if (testFileError(uexFile.m_errorType, Integer.parseInt(inOpCode),
-				inPath)) {
+		if (testFileError(uexFile.m_errorType, inOpCode, inPath)) {
 			return;
 		}
-		objectMap.put(Integer.parseInt(inOpCode), uexFile);
-		jsCallback(F_CALLBACK_NAME_CREATEFILE, Integer.parseInt(inOpCode),
+		objectMap.put(inOpCode, uexFile);
+		jsCallback(F_CALLBACK_NAME_CREATEFILE, inOpCode,
 				EUExCallback.F_C_INT, EUExCallback.F_C_SUCCESS);
 	}
 
@@ -180,17 +176,16 @@ public class EUExFileMgr extends EUExBase {
 			return;
 		}
 		String inOpCode = parm[0], inPath = parm[1];
-		if (!BUtility.isNumeric(inOpCode)) {
-			return;
-		}
-		if (objectMap.containsKey(Integer.parseInt(inOpCode))) {
-			jsCallback(F_CALLBACK_NAME_CREATEDIR, Integer.parseInt(inOpCode),
+//		if (!BUtility.isNumeric(inOpCode)) {
+//			return;
+//		}
+		if (objectMap.containsKey(inOpCode)) {
+			jsCallback(F_CALLBACK_NAME_CREATEDIR, inOpCode,
 					EUExCallback.F_C_INT, EUExCallback.F_C_FAILED);
 			return;
 		}
-		if (testNull(mBrwView.getCurrentWidget(), inPath,
-				Integer.parseInt(inOpCode))) {
-			jsCallback(F_CALLBACK_NAME_CREATEDIR, Integer.parseInt(inOpCode),
+		if (testNull(mBrwView.getCurrentWidget(), inPath)) {
+			jsCallback(F_CALLBACK_NAME_CREATEDIR, inOpCode,
 					EUExCallback.F_C_INT, EUExCallback.F_C_FAILED);
 			return;
 		}
@@ -200,12 +195,12 @@ public class EUExFileMgr extends EUExBase {
 				mBrwView.getCurrentWidget().m_wgtType);
 		EUExFile uexFile = new EUExFile(F_TYPE_DIR, inPath,
 				F_FILE_OPEN_MODE_NEW, mContext,null);
-		if (testFileError(uexFile.m_errorType, Integer.parseInt(inOpCode),
+		if (testFileError(uexFile.m_errorType, inOpCode,
 				inPath)) {
 			return;
 		}
-		objectMap.put(Integer.parseInt(inOpCode), uexFile);
-		jsCallback(F_CALLBACK_NAME_CREATEDIR, Integer.parseInt(inOpCode),
+		objectMap.put(inOpCode, uexFile);
+		jsCallback(F_CALLBACK_NAME_CREATEDIR, inOpCode,
 				EUExCallback.F_C_INT, EUExCallback.F_C_SUCCESS);
 	}
 
@@ -219,16 +214,15 @@ public class EUExFileMgr extends EUExBase {
 			return;
 		}
 		String inOpCode = parm[0], inPath = parm[1], inMode = parm[2];
-		if (!BUtility.isNumeric(inOpCode)) {
-			return;
-		}
-		if (testNull(mBrwView.getCurrentWidget(), inPath,
-                Integer.parseInt(inOpCode))) {
-			jsCallback(F_CALLBACK_NAME_OPENFILE, Integer.parseInt(inOpCode),
+//		if (!BUtility.isNumeric(inOpCode)) {
+//			return;
+//		}
+		if (testNull(mBrwView.getCurrentWidget(), inPath)) {
+			jsCallback(F_CALLBACK_NAME_OPENFILE, inOpCode,
 					EUExCallback.F_C_INT, EUExCallback.F_C_FAILED);
 			return;
 		}
-		EUExFile uexFile = objectMap.get(Integer.parseInt(inOpCode));
+		EUExFile uexFile = objectMap.get(inOpCode);
 		if (uexFile == null) {
 			inPath = BUtility.makeRealPath(
 					BUtility.makeUrl(mBrwView.getCurrentUrl(), inPath),
@@ -236,21 +230,19 @@ public class EUExFileMgr extends EUExBase {
 					mBrwView.getCurrentWidget().m_wgtType);
 			uexFile = new EUExFile(F_TYPE_FILE, inPath,
 					Integer.parseInt(inMode), mContext,null);
-			if (testFileError(uexFile.m_errorType, Integer.parseInt(inOpCode),
-					inPath)) {
+			if (testFileError(uexFile.m_errorType, inOpCode, inPath)) {
 				return;
 			}
 			uexFile.m_state = F_STATE_OPEN;
-			objectMap.put(Integer.parseInt(inOpCode), uexFile);
-			jsCallback(F_CALLBACK_NAME_OPENFILE, Integer.parseInt(inOpCode),
+			objectMap.put(inOpCode, uexFile);
+			jsCallback(F_CALLBACK_NAME_OPENFILE, inOpCode,
 					EUExCallback.F_C_INT, EUExCallback.F_C_SUCCESS);
 		} else {
 			if (uexFile.m_state == F_STATE_CREATE) {
 				uexFile.m_state = F_STATE_OPEN;
 			} else {
-				jsCallback(F_CALLBACK_NAME_OPENFILE,
-						Integer.parseInt(inOpCode), EUExCallback.F_C_INT,
-						EUExCallback.F_C_FAILED);
+				jsCallback(F_CALLBACK_NAME_OPENFILE, inOpCode,
+				        EUExCallback.F_C_INT, EUExCallback.F_C_FAILED);
 			}
 		}
 
@@ -266,7 +258,7 @@ public class EUExFileMgr extends EUExBase {
 			return;
 		}
 		String inPath = parm[0];
-		if (testNull(mBrwView.getCurrentWidget(), inPath, 0)) {
+		if (testNull(mBrwView.getCurrentWidget(), inPath)) {
 			jsCallback(F_CALLBACK_NAME_DELETEFILEBYPATH, 0,
 					EUExCallback.F_C_INT, EUExCallback.F_C_FAILED);
 			return;
@@ -306,10 +298,10 @@ public class EUExFileMgr extends EUExBase {
 			return;
 		}
 		String inOpCode = parm[0];
-		if (!BUtility.isNumeric(inOpCode)) {
-			return;
-		}
-		EUExFile object = objectMap.get(Integer.parseInt(inOpCode));
+//		if (!BUtility.isNumeric(inOpCode)) {
+//			return;
+//		}
+		EUExFile object = objectMap.get(inOpCode);
 		try {
 			if (object != null) {
 
@@ -321,23 +313,23 @@ public class EUExFileMgr extends EUExBase {
 					if (file.exists()) {
 						deleteFile(file);
 						jsCallback(F_CALLBACK_NAME_DELETEFILEBYID,
-								Integer.parseInt(inOpCode),
-								EUExCallback.F_C_INT, EUExCallback.F_C_SUCCESS);
+								inOpCode, EUExCallback.F_C_INT,
+								EUExCallback.F_C_SUCCESS);
 					} else {
 						jsCallback(F_CALLBACK_NAME_DELETEFILEBYID,
-								Integer.parseInt(inOpCode),
-								EUExCallback.F_C_INT, EUExCallback.F_C_FAILED);
+								inOpCode, EUExCallback.F_C_INT,
+								EUExCallback.F_C_FAILED);
 					}
 
 				} else {
 					jsCallback(F_CALLBACK_NAME_DELETEFILEBYID,
-							Integer.parseInt(inOpCode), EUExCallback.F_C_INT,
+							inOpCode, EUExCallback.F_C_INT,
 							EUExCallback.F_C_FAILED);
 				}
 
 			} else {
 				jsCallback(F_CALLBACK_NAME_DELETEFILEBYID,
-						Integer.parseInt(inOpCode), EUExCallback.F_C_INT,
+						inOpCode, EUExCallback.F_C_INT,
 						EUExCallback.F_C_FAILED);
 			}
 		} catch (SecurityException e) {
@@ -378,13 +370,11 @@ public class EUExFileMgr extends EUExBase {
 			inOpCode = parm[0];
 			inPath = parm[1];
 		}
-		if (!BUtility.isNumeric(inOpCode)) {
-			return;
-		}
-		if (testNull(mBrwView.getCurrentWidget(), inPath, 0)) {
-			errorCallback(
-					0,
-					EUExCallback.F_E_UEXFILEMGR_ISFILEEXISTBYPATH_1,
+//		if (!BUtility.isNumeric(inOpCode)) {
+//			return;
+//		}
+		if (testNull(mBrwView.getCurrentWidget(), inPath)) {
+			errorCallback(0, EUExCallback.F_E_UEXFILEMGR_ISFILEEXISTBYPATH_1,
 					ResoureFinder.getInstance().getString(mContext,
 							"error_parameter"));
 			return;
@@ -397,31 +387,26 @@ public class EUExFileMgr extends EUExBase {
 			if (inPath.startsWith("/")) {
 				File file = new File(inPath);
 				if (file.exists()) {
-					jsCallback(F_CALLBACK_NAME_ISFILEEXISTBYPATH,
-							Integer.parseInt(inOpCode), EUExCallback.F_C_INT,
-							EUExCallback.F_C_TRUE);
+					jsCallback(F_CALLBACK_NAME_ISFILEEXISTBYPATH,inOpCode,
+					        EUExCallback.F_C_INT, EUExCallback.F_C_TRUE);
 				} else {
-					jsCallback(F_CALLBACK_NAME_ISFILEEXISTBYPATH,
-							Integer.parseInt(inOpCode), EUExCallback.F_C_INT,
-							EUExCallback.F_C_FALSE);
+					jsCallback(F_CALLBACK_NAME_ISFILEEXISTBYPATH, inOpCode,
+					        EUExCallback.F_C_INT, EUExCallback.F_C_FALSE);
 				}
 			} else {
 				InputStream is = null;
 				try {
 					is = mContext.getAssets().open(inPath);
 					if (is == null) {
-						jsCallback(F_CALLBACK_NAME_ISFILEEXISTBYPATH,
-								Integer.parseInt(inOpCode),
+						jsCallback(F_CALLBACK_NAME_ISFILEEXISTBYPATH, inOpCode,
 								EUExCallback.F_C_INT, EUExCallback.F_C_FALSE);
 					} else {
-						jsCallback(F_CALLBACK_NAME_ISFILEEXISTBYPATH,
-								Integer.parseInt(inOpCode),
+						jsCallback(F_CALLBACK_NAME_ISFILEEXISTBYPATH, inOpCode,
 								EUExCallback.F_C_INT, EUExCallback.F_C_TRUE);
 					}
 				} catch (IOException e) {
-					jsCallback(F_CALLBACK_NAME_ISFILEEXISTBYPATH,
-							Integer.parseInt(inOpCode), EUExCallback.F_C_INT,
-							EUExCallback.F_C_FALSE);
+					jsCallback(F_CALLBACK_NAME_ISFILEEXISTBYPATH, inOpCode,
+					        EUExCallback.F_C_INT, EUExCallback.F_C_FALSE);
 					e.printStackTrace();
 				} finally {
 					if (is != null) {
@@ -453,10 +438,10 @@ public class EUExFileMgr extends EUExBase {
 			return;
 		}
 		String inOpCode = parm[0];
-		if (!BUtility.isNumeric(inOpCode)) {
-			return;
-		}
-		EUExFile object = objectMap.get(Integer.parseInt(inOpCode));
+//		if (!BUtility.isNumeric(inOpCode)) {
+//			return;
+//		}
+		EUExFile object = objectMap.get(inOpCode);
 		try {
 			if (object != null) {
 				String filePath = object.getFilePath();
@@ -498,9 +483,7 @@ public class EUExFileMgr extends EUExBase {
 					}
 				}
 			} else {
-				errorCallback(
-						0,
-						EUExCallback.F_E_UEXFILEMGR_ISFILEEXISTBYID_1,
+				errorCallback(0, EUExCallback.F_E_UEXFILEMGR_ISFILEEXISTBYID_1,
 						ResoureFinder.getInstance().getString(mContext,
 								"error_parameter"));
 			}
@@ -524,7 +507,7 @@ public class EUExFileMgr extends EUExBase {
 			return;
 		}
 		String inPath = parm[0];
-		if (testNull(mBrwView.getCurrentWidget(), inPath, 0)) {
+		if (testNull(mBrwView.getCurrentWidget(), inPath)) {
 			errorCallback(
 					0,
 					EUExCallback.F_E_UEXFILEMGR_GETFILETYPEBYPATH_1,
@@ -564,10 +547,10 @@ public class EUExFileMgr extends EUExBase {
 			return;
 		}
 		String inOpCode = parm[0];
-		if (!BUtility.isNumeric(inOpCode)) {
-			return;
-		}
-		EUExFile object = objectMap.get(Integer.parseInt(inOpCode));
+//		if (!BUtility.isNumeric(inOpCode)) {
+//			return;
+//		}
+		EUExFile object = objectMap.get(inOpCode);
 		try {
 			if (object != null) {
 
@@ -694,14 +677,13 @@ public class EUExFileMgr extends EUExBase {
 			return;
 		}
 		String inOpCode = parm[0], inPos = parm[1];
-		if (!BUtility.isNumeric(inOpCode)) {
-			return;
-		}
-		EUExFile object = objectMap.get(Integer.parseInt(inOpCode));
+//		if (!BUtility.isNumeric(inOpCode)) {
+//			return;
+//		}
+		EUExFile object = objectMap.get(inOpCode);
 		if (object != null) {
 			if (!object.seek(inPos)) {
-				errorCallback(
-						Integer.parseInt(inOpCode),
+				errorCallback(inOpCode,
 						EUExCallback.F_E_UEXFILEMGR_SEEKFILE_1,
 						ResoureFinder.getInstance().getString(mContext,
 								"error_parameter"));
@@ -712,14 +694,13 @@ public class EUExFileMgr extends EUExBase {
 	public void seekBeginOfFile(String[] parm) {
 
 		String inOpCode = parm[0];
-		if (!BUtility.isNumeric(inOpCode)) {
-			return;
-		}
-		EUExFile object = objectMap.get(Integer.parseInt(inOpCode));
+//		if (!BUtility.isNumeric(inOpCode)) {
+//			return;
+//		}
+		EUExFile object = objectMap.get(inOpCode);
 		if (object != null) {
 			if (!object.seekBegin()) {
-				errorCallback(
-						Integer.parseInt(inOpCode),
+				errorCallback(inOpCode,
 						EUExCallback.F_E_UEXFILEMGR_SEEKBEGINOFFILE_1,
 						ResoureFinder.getInstance().getString(mContext,
 								"error_parameter"));
@@ -731,14 +712,13 @@ public class EUExFileMgr extends EUExBase {
 	public void seekEndOfFile(String[] parm) {
 
 		String inOpCode = parm[0];
-		if (!BUtility.isNumeric(inOpCode)) {
-			return;
-		}
-		EUExFile object = objectMap.get(Integer.parseInt(inOpCode));
+//		if (!BUtility.isNumeric(inOpCode)) {
+//			return;
+//		}
+		EUExFile object = objectMap.get(inOpCode);
 		if (object != null) {
 			if (!object.seekEnd()) {
-				errorCallback(
-						Integer.parseInt(inOpCode),
+				errorCallback(inOpCode,
 						EUExCallback.F_E_UEXFILEMGR_SEEKENDOFFILE_1,
 						ResoureFinder.getInstance().getString(mContext,
 								"error_parameter"));
@@ -752,22 +732,21 @@ public class EUExFileMgr extends EUExBase {
 			return;
 		}
 		String inOpCode = parm[0], inMode = parm[1], inData = parm[2];
-		if (!BUtility.isNumeric(inOpCode)) {
-			return;
-		}
-		EUExFile object = objectMap.get(Integer.parseInt(inOpCode));
+//		if (!BUtility.isNumeric(inOpCode)) {
+//			return;
+//		}
+		EUExFile object = objectMap.get(inOpCode);
 		if (object != null) {
 			boolean result = object.write(inData, Integer.parseInt(inMode));
             if (result) {
-                jsCallback(F_CALLBACK_NAME_WRITEFILE, Integer.parseInt(inOpCode),
+                jsCallback(F_CALLBACK_NAME_WRITEFILE, inOpCode,
                         EUExCallback.F_C_INT, EUExCallback.F_C_SUCCESS);
             } else {
-                jsCallback(F_CALLBACK_NAME_WRITEFILE, Integer.parseInt(inOpCode),
+                jsCallback(F_CALLBACK_NAME_WRITEFILE, inOpCode,
                         EUExCallback.F_C_INT, EUExCallback.F_C_FAILED);
             }
 		} else {
-			errorCallback(
-                    Integer.parseInt(inOpCode),
+			errorCallback(inOpCode,
                     EUExCallback.F_E_UEXFILEMGR_WRITEFILE_1,
                     ResoureFinder.getInstance().getString(mContext,
                             "error_parameter"));
@@ -779,23 +758,22 @@ public class EUExFileMgr extends EUExBase {
             return;
         }
         String inOpCode = parm[0], inLen = parm[1];
-        if (!BUtility.isNumeric(inOpCode)) {
-            return;
-        }
-        EUExFile object = objectMap.get(Integer.parseInt(inOpCode));
+//        if (!BUtility.isNumeric(inOpCode)) {
+//            return;
+//        }
+        EUExFile object = objectMap.get(inOpCode);
         if (object != null) {
             String resString = object.read(Integer
                     .parseInt(inLen));
             if (TextUtils.isEmpty(resString)) {
-                jsCallback(F_CALLBACK_NAME_READFILE, Integer.parseInt(inOpCode),
+                jsCallback(F_CALLBACK_NAME_READFILE, inOpCode,
                         EUExCallback.F_C_TEXT, "");
             } else {
-                jsCallback(F_CALLBACK_NAME_READFILE, Integer.parseInt(inOpCode),
+                jsCallback(F_CALLBACK_NAME_READFILE, inOpCode,
                         EUExCallback.F_C_TEXT, BUtility.transcoding(resString));
             }
         } else {
-            errorCallback(
-                    Integer.parseInt(inOpCode),
+            errorCallback(inOpCode,
                     EUExCallback.F_E_UEXFILEMGR_READFILE_1,
                     ResoureFinder.getInstance().getString(mContext,
                             "error_parameter"));
@@ -804,38 +782,35 @@ public class EUExFileMgr extends EUExBase {
 
 	public void getFileSize(String[] parm) {
 		String inOpCode = parm[0];
-		if (!BUtility.isNumeric(inOpCode)) {
-			return;
-		}
-		EUExFile object = objectMap.get(Integer.parseInt(inOpCode));
+//		if (!BUtility.isNumeric(inOpCode)) {
+//			return;
+//		}
+		EUExFile object = objectMap.get(inOpCode);
 		if (object != null) {
 			long res = object.getSize();
-			jsCallback(F_CALLBACK_NAME_GETFILESIZE, Integer.parseInt(inOpCode),
+			jsCallback(F_CALLBACK_NAME_GETFILESIZE, inOpCode,
                     EUExCallback.F_C_INT, Integer.parseInt(String.valueOf(res)));
 		} else {
-			errorCallback(
-                    Integer.parseInt(inOpCode),
+			errorCallback(inOpCode,
                     EUExCallback.F_E_UEXFILEMGR_GETFILESIZE_1,
                     ResoureFinder.getInstance().getString(mContext,
                             "error_parameter"));
 		}
-
 	}
 
 	public void getFilePath(String[] parm) {
 		String inOpCode = parm[0];
-		if (!BUtility.isNumeric(inOpCode)) {
-			return;
-		}
-		EUExFile object = objectMap.get(Integer.parseInt(inOpCode));
+//		if (!BUtility.isNumeric(inOpCode)) {
+//			return;
+//		}
+		EUExFile object = objectMap.get(inOpCode);
 		if (object != null) {
 			String res = object.getFilePath();
-			jsCallback(F_CALLBACK_NAME_GETFILEPATH, Integer.parseInt(inOpCode),
+			jsCallback(F_CALLBACK_NAME_GETFILEPATH, inOpCode,
                     EUExCallback.F_C_TEXT, res);
 		} else {
 
-			errorCallback(
-                    Integer.parseInt(inOpCode),
+			errorCallback(inOpCode,
                     EUExCallback.F_E_UEXFILEMGR_GETFILEPATH_1,
                     ResoureFinder.getInstance().getString(mContext,
                             "error_parameter"));
@@ -890,15 +865,14 @@ public class EUExFileMgr extends EUExBase {
 
 	public void closeFile(String[] parm) {
 		String inOpCode = parm[0];
-		if (!BUtility.isNumeric(inOpCode)) {
-			return;
-		}
-		EUExFile object = objectMap.remove(Integer.parseInt(inOpCode));
+//		if (!BUtility.isNumeric(inOpCode)) {
+//			return;
+//		}
+		EUExFile object = objectMap.remove(inOpCode);
 		if (object != null) {
 			object.close();
 		} else {
-			errorCallback(
-                    Integer.parseInt(inOpCode),
+			errorCallback(inOpCode,
                     EUExCallback.F_E_UEXFILEMGR_CLOSEFILE_1,
                     ResoureFinder.getInstance().getString(mContext,
                             "error_parameter"));
@@ -908,19 +882,18 @@ public class EUExFileMgr extends EUExBase {
 
 	public void getReaderOffset(String[] parm) {
 		String inOpCode = parm[0];
-		if (!BUtility.isNumeric(inOpCode)) {
-			return;
-		}
-		EUExFile object = objectMap.get(Integer.parseInt(inOpCode));
+//		if (!BUtility.isNumeric(inOpCode)) {
+//			return;
+//		}
+		EUExFile object = objectMap.get(inOpCode);
 		if (object != null) {
 			long res = object.getreaderOffset();
 
 			jsCallback(F_CALLBACK_NAME_GETREADEROFFSET,
-                    Integer.parseInt(inOpCode), EUExCallback.F_C_INT,
+                    inOpCode, EUExCallback.F_C_INT,
                     Integer.parseInt(String.valueOf(res)));
 		} else {
-			errorCallback(
-                    Integer.parseInt(inOpCode),
+			errorCallback(inOpCode,
                     EUExCallback.F_E_UEXFILEMGR_GETREADEROFFSET_1,
                     ResoureFinder.getInstance().getString(mContext,
                             "error_parameter"));
@@ -933,17 +906,16 @@ public class EUExFileMgr extends EUExBase {
 			return;
 		}
 		String inOpCode = parm[0], inPercent = parm[1], inLen = parm[2];
-		if (!BUtility.isNumeric(inOpCode)) {
-			return;
-		}
-		EUExFile object = objectMap.get(Integer.parseInt(inOpCode));
+//		if (!BUtility.isNumeric(inOpCode)) {
+//			return;
+//		}
+		EUExFile object = objectMap.get(inOpCode);
 		if (object != null) {
 			String res = object.readerPercent(Integer.parseInt(inPercent),
                     Integer.parseInt(inLen));
 
-			jsCallback(F_CALLBACK_NAME_READPERCENT, Integer.parseInt(inOpCode),
+			jsCallback(F_CALLBACK_NAME_READPERCENT, inOpCode,
                     EUExCallback.F_C_TEXT, res);
-
 		}
 
 	}
@@ -953,14 +925,14 @@ public class EUExFileMgr extends EUExBase {
 			return;
 		}
 		String inOpCode = parm[0], inLen = parm[1];
-		if (!BUtility.isNumeric(inOpCode)) {
-			return;
-		}
-		EUExFile object = objectMap.get(Integer.parseInt(inOpCode));
+//		if (!BUtility.isNumeric(inOpCode)) {
+//			return;
+//		}
+		EUExFile object = objectMap.get(inOpCode);
 		if (object != null) {
 			String res = object.readerNext(Integer.parseInt(inLen));
 
-			jsCallback(F_CALLBACK_NAME_READNEXT, Integer.parseInt(inOpCode),
+			jsCallback(F_CALLBACK_NAME_READNEXT, inOpCode,
                     EUExCallback.F_C_TEXT, res);
 
 		}
@@ -972,14 +944,13 @@ public class EUExFileMgr extends EUExBase {
 			return;
 		}
 		String inOpCode = parm[0], inLen = parm[1];
-		if (!BUtility.isNumeric(inOpCode)) {
-			return;
-		}
-		EUExFile object = objectMap.get(Integer.parseInt(inOpCode));
+//		if (!BUtility.isNumeric(inOpCode)) {
+//			return;
+//		}
+		EUExFile object = objectMap.get(inOpCode);
 		if (object != null) {
 			String res = object.readerPre(Integer.parseInt(inLen));
-
-			jsCallback(F_CALLBACK_NAME_READPRE, Integer.parseInt(inOpCode),
+			jsCallback(F_CALLBACK_NAME_READPRE, inOpCode,
 					EUExCallback.F_C_TEXT, res);
 
 		}
@@ -992,17 +963,16 @@ public class EUExFileMgr extends EUExBase {
 		}
 
 		String inOpCode = parm[0], inPath = parm[1],inKey =  parm[2];
-		if (!BUtility.isNumeric(inOpCode)) {
-			return;
-		}
-		if (objectMap.containsKey(Integer.parseInt(inOpCode))) {
-			jsCallback(F_CALLBACK_NAME_CREATESECURE, Integer.parseInt(inOpCode),
+//		if (!BUtility.isNumeric(inOpCode)) {
+//			return;
+//		}
+		if (objectMap.containsKey(inOpCode)) {
+			jsCallback(F_CALLBACK_NAME_CREATESECURE, inOpCode,
 					EUExCallback.F_C_INT, EUExCallback.F_C_FAILED);
 			return;
 		}
-		if (testNull(mBrwView.getCurrentWidget(), inPath,
-				Integer.parseInt(inOpCode))) {
-			jsCallback(F_CALLBACK_NAME_CREATESECURE, Integer.parseInt(inOpCode),
+		if (testNull(mBrwView.getCurrentWidget(), inPath)) {
+			jsCallback(F_CALLBACK_NAME_CREATESECURE, inOpCode,
 					EUExCallback.F_C_INT, EUExCallback.F_C_FAILED);
 			return;
 		}
@@ -1012,12 +982,11 @@ public class EUExFileMgr extends EUExBase {
 				mBrwView.getCurrentWidget().m_wgtType);
 		EUExFile uexFile = new EUExFile(F_TYPE_FILE, inPath,
 				F_FILE_OPEN_MODE_NEW, mContext,inKey);
-		if (testFileError(uexFile.m_errorType, Integer.parseInt(inOpCode),
-				inPath)) {
+		if (testFileError(uexFile.m_errorType, inOpCode, inPath)) {
 			return;
 		}
-		objectMap.put(Integer.parseInt(inOpCode), uexFile);
-		jsCallback(F_CALLBACK_NAME_CREATESECURE, Integer.parseInt(inOpCode),
+		objectMap.put(inOpCode, uexFile);
+		jsCallback(F_CALLBACK_NAME_CREATESECURE, inOpCode,
 				EUExCallback.F_C_INT, EUExCallback.F_C_SUCCESS);
 	}
 
@@ -1027,16 +996,15 @@ public class EUExFileMgr extends EUExBase {
 		}
 
 		String inOpCode = parm[0], inPath = parm[1], inMode = parm[2],inKey = parm[3];
-		if (!BUtility.isNumeric(inOpCode)) {
-			return;
-		}
-		if (testNull(mBrwView.getCurrentWidget(), inPath,
-                Integer.parseInt(inOpCode))) {
-			jsCallback(F_CALLBACK_NAME_OPENSECURE, Integer.parseInt(inOpCode),
+//		if (!BUtility.isNumeric(inOpCode)) {
+//			return;
+//		}
+		if (testNull(mBrwView.getCurrentWidget(), inPath)) {
+			jsCallback(F_CALLBACK_NAME_OPENSECURE, inOpCode,
 					EUExCallback.F_C_INT, EUExCallback.F_C_FAILED);
 			return;
 		}
-		EUExFile uexFile = objectMap.get(Integer.parseInt(inOpCode));
+		EUExFile uexFile = objectMap.get(inOpCode);
 		if (uexFile == null) {
 			inPath = BUtility.makeRealPath(
 					BUtility.makeUrl(mBrwView.getCurrentUrl(), inPath),
@@ -1044,21 +1012,20 @@ public class EUExFileMgr extends EUExBase {
 					mBrwView.getCurrentWidget().m_wgtType);
 			uexFile = new EUExFile(F_TYPE_FILE, inPath,
 					Integer.parseInt(inMode), mContext,inKey);
-			if (testFileError(uexFile.m_errorType, Integer.parseInt(inOpCode),
+			if (testFileError(uexFile.m_errorType, inOpCode,
 					inPath)) {
 				return;
 			}
 			uexFile.m_state = F_STATE_OPEN;
-			objectMap.put(Integer.parseInt(inOpCode), uexFile);
-			jsCallback(F_CALLBACK_NAME_OPENSECURE, Integer.parseInt(inOpCode),
+			objectMap.put(inOpCode, uexFile);
+			jsCallback(F_CALLBACK_NAME_OPENSECURE, inOpCode,
 					EUExCallback.F_C_INT, EUExCallback.F_C_SUCCESS);
 		} else {
 			if (uexFile.m_state == F_STATE_CREATE) {
 				uexFile.m_state = F_STATE_OPEN;
 			} else {
-				jsCallback(F_CALLBACK_NAME_OPENSECURE,
-						Integer.parseInt(inOpCode), EUExCallback.F_C_INT,
-						EUExCallback.F_C_FAILED);
+				jsCallback(F_CALLBACK_NAME_OPENSECURE, inOpCode,
+				        EUExCallback.F_C_INT, EUExCallback.F_C_FAILED);
 			}
 		}
 	}
@@ -1069,7 +1036,7 @@ public class EUExFileMgr extends EUExBase {
 			return;
 		}
 		String inPath = params[0];
-		if (testNull(mBrwView.getCurrentWidget(), inPath, 0)) {
+		if (testNull(mBrwView.getCurrentWidget(), inPath)) {
 			jsCallback(F_CALLBACK_NAME_GETFILELISTBYPATH, 0,
 					EUExCallback.F_C_TEXT, "");
 			return;
@@ -1157,9 +1124,9 @@ public class EUExFileMgr extends EUExBase {
 			return;
 		}
 		String inOpCode = params[0], inPath = params[1];
-		if (!BUtility.isNumeric(inOpCode)) {
-			return;
-		}
+//		if (!BUtility.isNumeric(inOpCode)) {
+//			return;
+//		}
 		inPath = BUtility.makeRealPath(
 				BUtility.makeUrl(mBrwView.getCurrentUrl(), inPath),
 				mBrwView.getCurrentWidget().m_widgetPath,
@@ -1168,13 +1135,13 @@ public class EUExFileMgr extends EUExBase {
 		if(time == null || "".equalsIgnoreCase(time)) {
 			time = EUExUtil.getString("plugin_file_not_exist");
 		}
-		jsCallback(F_CALLBACK_NAME_GETFILECREATETIME, Integer.parseInt(inOpCode),
+		jsCallback(F_CALLBACK_NAME_GETFILECREATETIME, inOpCode,
                 EUExCallback.F_C_TEXT, time);
 	}
 
 	@Override
 	public boolean clean() {
-		Iterator<Integer> iterator = objectMap.keySet().iterator();
+		Iterator<String> iterator = objectMap.keySet().iterator();
 		while (iterator.hasNext()) {
 			EUExFile object = objectMap.get(iterator.next());
 			object.close();
@@ -1317,9 +1284,9 @@ public class EUExFileMgr extends EUExBase {
 			return;
 		}
 		String inOpCode = parm[0], srcFilePath = parm[1], objPath = parm[2];
-		if (!BUtility.isNumeric(inOpCode)) {
-			return;
-		}
+//		if (!BUtility.isNumeric(inOpCode)) {
+//			return;
+//		}
 
 		boolean flag = false;
 		if (srcFilePath.startsWith(BUtility.F_Widget_RES_SCHEMA)) {
@@ -1365,16 +1332,16 @@ public class EUExFileMgr extends EUExBase {
 				}
 				File copied = new File(objRealPath + temp.getName());
 				if (copied.exists() && copied.length() == length) {
-					jsCallback(F_CALLBACK_NAME_COPYFILE, Integer.parseInt(inOpCode), EUExCallback.F_C_INT,
-							EUExCallback.F_C_SUCCESS);
+					jsCallback(F_CALLBACK_NAME_COPYFILE, inOpCode,
+					        EUExCallback.F_C_INT, EUExCallback.F_C_SUCCESS);
 				} else {
-					jsCallback(F_CALLBACK_NAME_COPYFILE, Integer.parseInt(inOpCode), EUExCallback.F_C_INT,
-							EUExCallback.F_C_FAILED);
+					jsCallback(F_CALLBACK_NAME_COPYFILE, inOpCode,
+					        EUExCallback.F_C_INT, EUExCallback.F_C_FAILED);
 				}
 			} catch (IOException e) {
 				Log.e("tag", "Failed to copy asset file: " + srcFileRealPath, e);
-				jsCallback(F_CALLBACK_NAME_COPYFILE, Integer.parseInt(inOpCode), EUExCallback.F_C_INT,
-						EUExCallback.F_C_FAILED);
+				jsCallback(F_CALLBACK_NAME_COPYFILE, inOpCode,
+				        EUExCallback.F_C_INT, EUExCallback.F_C_FAILED);
 			}
 			flag = false;
 		} else {
@@ -1402,16 +1369,16 @@ public class EUExFileMgr extends EUExBase {
 				}
 				File copied = new File(objRealPath + temp.getName());
 				if (copied.exists() && copied.length() == temp.length()) {
-					jsCallback(F_CALLBACK_NAME_COPYFILE, Integer.parseInt(inOpCode), EUExCallback.F_C_INT,
-							EUExCallback.F_C_SUCCESS);
+					jsCallback(F_CALLBACK_NAME_COPYFILE, inOpCode,
+					        EUExCallback.F_C_INT, EUExCallback.F_C_SUCCESS);
 				} else {
-					jsCallback(F_CALLBACK_NAME_COPYFILE, Integer.parseInt(inOpCode), EUExCallback.F_C_INT,
-							EUExCallback.F_C_FAILED);
+					jsCallback(F_CALLBACK_NAME_COPYFILE, inOpCode,
+					        EUExCallback.F_C_INT, EUExCallback.F_C_FAILED);
 				}
 			} catch (IOException e) {
 				Log.e("tag", "Failed to copy sdcard file: " + srcFileRealPath, e);
-				jsCallback(F_CALLBACK_NAME_COPYFILE, Integer.parseInt(inOpCode), EUExCallback.F_C_INT,
-						EUExCallback.F_C_FAILED);
+				jsCallback(F_CALLBACK_NAME_COPYFILE, inOpCode,
+				        EUExCallback.F_C_INT, EUExCallback.F_C_FAILED);
 			}
 		}
 	}
@@ -1763,6 +1730,29 @@ public class EUExFileMgr extends EUExBase {
 		}
 		return false;
 	}
+	
+    private void jsCallback(String inCallbackName, String inOpCode,
+            int inDataType, int inData) {
+        String js = SCRIPT_HEADER + "if(" + inCallbackName + "){"
+                + inCallbackName + "('" + inOpCode + "'," + inDataType + ",'"
+                + inData + "'" + SCRIPT_TAIL;
+        onCallback(js);
+    }
+    
+    private void jsCallback(String inCallbackName, String inOpCode,
+            int inDataType, String inData) {
+        String js = SCRIPT_HEADER + "if(" + inCallbackName + "){"
+                + inCallbackName + "('" + inOpCode + "'," + inDataType + ",'"
+                + inData + "'" + SCRIPT_TAIL;
+        onCallback(js);
+    }
+
+    private void errorCallback(String inOpCode, int InErrorCode,
+            String inErrorInfo) {
+        String js = SCRIPT_ERROR_HEADER + "'" + inOpCode + "'," + InErrorCode + ",'"
+                + inErrorInfo + "'" + SCRIPT_TAIL;
+        onCallback(js);
+    }
     
     
 
