@@ -165,6 +165,13 @@
 	function getFileListByPath() {
 		uexFileMgr.getFileListByPath(document.getElementById('list_FilePath').value);
 	}
+	function copyFile() {
+		var s = document.getElementById('srcFilePath').value;
+		var o = document.getElementById('objPath').value;
+		alert("s: "+s+"\no: "+o);
+		
+		uexFileMgr.copyFile('109',s,o);
+	}
 	window.uexOnload = function() {
 		uexWidgetOne.cbError = function(opCode, errorCode, errorInfo) {
 			alert(errorInfo);
@@ -247,9 +254,9 @@
 				break;
 			case cInt:
 				if (data == 0) {
-					alert("删出成功");
+					alert("删除成功");
 				} else {
-					alert("删出失败");
+					alert("删除失败");
 				}
 				break;
 			default:
@@ -268,9 +275,9 @@
 				break;
 			case cInt:
 				if (data == 0) {
-					alert("删出成功");
+					alert("删除成功");
 				} else {
-					alert("删出失败");
+					alert("删除失败");
 				}
 				break;
 			default:
@@ -549,10 +556,82 @@
 			default:
 				alert("error");
 			}
-
+		}
+		uexFileMgr.cbSearch = function(info) {
+			alert(info);
+		}
+		uexFileMgr.cbGetFileSizeByPath = function(info){
+		    alert(info);
+		}
+		uexFileMgr.cbCopyFile = function(opCode, dataType, data){
+		    alert("opCode:"+opCode+",dataType:"+dataType+",data"+data);
+		    
 		}
 	}
-		</script>
+
+    function getFileSizeByPath(){
+        var path = document.getElementById("fileSize_id").value;
+        var params = {
+            id:1,
+            path:path,
+            unit:"kB"
+        }
+        var data = JSON.stringify(params);
+        uexFileMgr.getFileSizeByPath(data);
+    }
+
+	function searchFile() {
+		var data1 = {
+			path: "/sdcard/wgtRes",
+			option: 3
+		};
+		var data2 = {
+			path: "res://",
+			option: 3,
+			keywords: ['test']
+		};
+		var data3 = {
+			path: "file:///sdcard/wgtRes/",
+			option: 5,
+			keywords: ['1']
+		};
+		var data4 = {
+			path: "res://",
+			option: 6,
+			keywords: ['1'],
+			suffixes:['xml']
+		};
+		var data5 = {
+			path: "res://",
+			option: 7,
+			keywords: ['1']
+		};
+		var data6 = {
+			path: "/sdcard/wgtRes",
+			option: 5,
+			keywords: ['1']
+		};
+		var data7 = {
+			path: "wgts://",
+			option: 5,
+			keywords: ['1']
+		};
+		var data8 = {
+			path: "wgts://",
+			option: 7,
+			keywords: ['1']
+		};
+
+		uexFileMgr.search(JSON.stringify(data1));
+		//uexFileMgr.search(JSON.stringify(data2));
+		//uexFileMgr.search(JSON.stringify(data3));
+		//uexFileMgr.search(JSON.stringify(data4));
+		//uexFileMgr.search(JSON.stringify(data5));
+		//uexFileMgr.search(JSON.stringify(data7));
+		//uexFileMgr.search(JSON.stringify(data8));
+
+	}
+	</script>
   </head>
 <body class="um-vp " ontouchstart>
 	<div class="conbor">
@@ -632,10 +711,27 @@
 			<br>
 			<span>21.获取文件夹内的文件列表</span> 
 			<span>输入文件路径：</span>
-			<input class="textbox" id="list_FilePath" type="text" value="/sdcard/widgetone"> 
+			<input class="textbox" id="list_FilePath" type="text" value="/sdcard/widgetone">
 			<input class="btn" type="button" value="读取文件列表" onclick="getFileListByPath();">
 			<span>取得的文件列表为：</span>
 			<textarea class="tcxx" id="fileListData"></textarea>
+			<br>
+
+			<span>22.搜索文件</span>
+			<input class="btn" type="button" value="读取文件列表" onclick="searchFile()">
+			<span>取得的文件列表为：</span>
+
+            <span>23.获取文件大小</span>
+            <input class="textbox" id="fileSize_id" type="text" value="wgt://">
+            <input class="btn" type="button" value="获取文件大小" onclick="getFileSizeByPath()">
+            
+            <span>24.复制文件到文件夹</span>
+            <span>opid:109</span>
+            <span>需要复制的文件路径</span>
+            <input class="textbox" id="srcFilePath" type="text" value="res://1016.jpg">
+            <span>目标文件夹路径</span>
+			<input class="textbox" id="objPath" type="text" value="wgt://">
+            <input class="btn" type="button" value="复制文件" onclick="copyFile()">
 			<br>
 		</div>
 	</div>

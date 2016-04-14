@@ -4,7 +4,7 @@
     android:versionName="1.0" >
 
     <uses-sdk
-        android:minSdkVersion="8"
+        android:minSdkVersion="11"
         android:targetSdkVersion="15" />
 
     <application
@@ -19,6 +19,18 @@
             android:screenOrientation="portrait"
             android:theme="@style/browser_main_theme"
             android:windowSoftInputMode="stateHidden|adjustResize" >
+        </activity>
+        <activity
+            android:name="org.zywx.wbpalmstar.engine.TempActivity"
+            android:launchMode="standard"
+            android:screenOrientation="portrait"
+            android:theme="@style/browser_loading_theme" />
+        <activity
+            android:name="org.zywx.wbpalmstar.engine.LoadingActivity"
+            android:configChanges="keyboardHidden|orientation"
+            android:launchMode="standard"
+            android:screenOrientation="portrait"
+            android:theme="@style/browser_loading_theme" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -29,6 +41,7 @@
         <activity
             android:name="org.zywx.wbpalmstar.plugin.uexfilemgr.FilexplorerActivity"
             android:configChanges="orientation|keyboardHidden"
+            android:exported="false"
             android:theme="@style/Style_platform_no_title_and_background" />
     </application>
 

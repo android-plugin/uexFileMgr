@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+
+<!--
+  ~ Copyright (c) 2015.  The AppCan Open Source Project.
+  ~
+  ~  This program is free software: you can redistribute it and/or modify
+  ~  it under the terms of the GNU Lesser General Public License as published by
+  ~  the Free Software Foundation, either version 3 of the License, or
+  ~  (at your option) any later version.
+  ~
+  ~  This program is distributed in the hope that it will be useful,
+  ~  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  ~  GNU Lesser General Public License for more details.
+  ~
+  ~  You should have received a copy of the GNU Lesser General Public License
+  ~  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+  ~
+  ~
+  -->
+
+<resources>
+	<string name="plugin_file_now_loading_folder">Reading folder...</string>
+    <string name="plugin_file_can_not_open_this_folder">Can\'t open this folder!</string>
+    <string name="plugin_file_file_path_error">File path error!</string>
+    <string name="plugin_file_can_not_mount_sdcard">Can not mount SDCard</string>
+    <string name="plugin_file_are_you_sure_to_exit_file_explorer">Are you sure to exit file explorer?</string>
+    <string name="plugin_file_target_directory_is_not_exist_auto_redirect_to_sdcard">Target directory does not exist ,redirecting to SDCard...</string>
+    <string name="plugin_file_input_path_is_not_valid_path_redirect_to_sdcard">Input file is not valid
+        path,redirecting to SDCard...</string>
+    <string name="plugin_fileMgr_folder">folder</string>
+    <string name="plugin_file_not_exist">File does not exist!</string>
+</resources>

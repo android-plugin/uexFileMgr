@@ -32,5 +32,8 @@
         <method name="getFileCreateTime"/>
         <method name="renameFile"/>
         <method name="getFileListByPath"/>
+        <method name="search"/>
+        <method name="getFileSizeByPath" />
+        <method name="copyFile" />        
     </plugin>
 </uexplugins>

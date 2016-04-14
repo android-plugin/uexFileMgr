@@ -1,8 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <uexplugins>
     <plugin
-        uexName="uexFileMgr" version="3.0.6" build="6">
-        <info>6.新增getFileListByPath方法获取指定目录中的文件列表</info>
+        uexName="uexFileMgr" version="3.0.16" build="16">
+        <info>16.修复拒绝服务漏洞的问题</info>
+        <build>15.修改对文件的各种操作的opId支持非纯数字（与IOS保持一致）</build>
+        <build>14.修正getFileRealPath获取plugin子应用路径错误的问题</build>
+        <build>13.新增复制文件的方法</build>
+        <build>12.新增通过路径获取文件大小方法</build>
+        <build>11.修改getFileRealPath指定回调名时，只回调一个参数（与ios统一）</build>
+        <build>10.添加文件搜索接口</build>
+        <build>9.修复闪退的bug</build>
+        <build>8.国际化</build>
+        <build>7.修改接口getFileRealPath,支持回调方法名称的传入</build>
+        <build>6.新增getFileListByPath方法获取指定目录中的文件列表</build>
         <build>5.新增cbWriteFile回调方法</build>
         <build>4:添加重命名接口</build>
         <build>3:修复解析res://路径的getFileRealPath方法返回错误问题</build>

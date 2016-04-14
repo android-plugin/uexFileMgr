@@ -5,6 +5,7 @@ import android.text.TextUtils;
 import android.widget.Toast;
 
 import org.apache.http.util.EncodingUtils;
+import org.zywx.wbpalmstar.base.BDebug;
 import org.zywx.wbpalmstar.base.BUtility;
 import org.zywx.wbpalmstar.base.ResoureFinder;
 
@@ -231,6 +232,7 @@ public class EUExFile {
 		}
 		try {
 			if (m_inputStream != null) {
+
 				if (newLen == -1) {
 					buffer = new byte[m_inputStream.available()];
 					m_inputStream.read(buffer);
@@ -242,6 +244,7 @@ public class EUExFile {
 				}
 				return EncodingUtils.getString(buffer, "UTF-8");
 			} else {
+				BDebug.i("appcan","m_inputStream is null...");
 				if (m_inPath.startsWith("/")) {
 					File readFile = new File(m_inPath);
 					if (!readFile.exists()) {
@@ -288,7 +291,6 @@ public class EUExFile {
 	 * 关闭文件
 	 */
 	protected void close() {
-
 		try {
 			if (m_fout != null) {
 				m_fout.close();

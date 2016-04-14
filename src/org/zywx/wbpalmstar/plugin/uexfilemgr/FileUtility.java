@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -315,4 +316,60 @@ public class FileUtility {
 		}
 		return bitmap;
 	}
+
+    /**
+     * 获取指定文件大小
+     *
+     * @param file
+     * @return
+     * @throws Exception
+     */
+    public static long getFileSize(File file) throws Exception {
+        FileInputStream fis = new FileInputStream(file);
+        return fis.available();
+    }
+    /**
+     * 获取指定文件夹大小
+     *
+     * @param file
+     * @return
+     * @throws Exception
+     */
+    public static long getFileSizes(File file) throws Exception {
+        long size = 0;
+        File list[] = file.listFiles();
+        for (int i = 0; i < list.length; i++) {
+            if (list[i].isDirectory()) {
+                size = size + getFileSizes(list[i]);
+            } else {
+                size = size + getFileSize(list[i]);
+            }
+        }
+        return size;
+    }
+
+    /**
+     * 转换文件大小,指定转换的类型
+     *
+     * @param fileS
+     * @param sizeType
+     * @return
+     */
+    public static double formetFileSize(long fileS, String sizeType) {
+        DecimalFormat df = new DecimalFormat("#.00");
+        double fileSizeLong;
+        if (sizeType.equals(JsConst.SIZE_TYPE_B)){
+            fileSizeLong = Double.valueOf(df.format((double) fileS));
+        }else if(sizeType.equals(JsConst.SIZE_TYPE_KB)){
+            fileSizeLong = Double.valueOf(df.format((double) fileS / 1024));
+        }else if(sizeType.equals(JsConst.SIZE_TYPE_MB)) {
+            fileSizeLong = Double.valueOf(df.format((double) fileS / 1048576));
+        }else if(sizeType.equals(JsConst.SIZE_TYPE_GB)){
+            fileSizeLong = Double.valueOf(df
+                    .format((double) fileS / 1073741824));
+        }else{
+            fileSizeLong = Double.valueOf(df.format((double) fileS));
+        }
+        return fileSizeLong;
+    }
 }

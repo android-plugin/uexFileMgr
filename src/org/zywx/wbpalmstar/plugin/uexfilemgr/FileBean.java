@@ -5,6 +5,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import org.zywx.wbpalmstar.base.BDebug;
 import org.zywx.wbpalmstar.base.ResoureFinder;
+import org.zywx.wbpalmstar.engine.universalex.EUExUtil;
+
 import android.content.Context;
 
 public class FileBean {
@@ -15,7 +17,7 @@ public class FileBean {
 	public static final String KEY_SIZE = "SIZE";
 	public static final String KEY_FILE = "FILE";
 
-	private static final String FOLDER = "文件夹";
+	private static final String FOLDER = EUExUtil.getString("plugin_fileMgr_folder");
 	private int resourceId;
 	private File file;
 	public String fileSize = "";
