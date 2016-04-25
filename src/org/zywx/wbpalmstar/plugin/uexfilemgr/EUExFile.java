@@ -2,6 +2,7 @@ package org.zywx.wbpalmstar.plugin.uexfilemgr;
 
 import android.content.Context;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.widget.Toast;
 
 import org.apache.http.util.EncodingUtils;
@@ -181,7 +182,7 @@ public class EUExFile {
 				m_fout = null;
 			}
 			boolean mode = false;
-			if (1 == inMode) {
+			if (1 == inMode || 3 == inMode) {
 				mode = true;
 			} else {
 				mode = false;
@@ -191,6 +192,10 @@ public class EUExFile {
 			if (!TextUtils.isEmpty(m_key)) {
 				data = Rc4Encrypt.encry_RC4_string(data, m_key);
 			}
+            //如果设置需要进行Base64运算
+            if (inMode > 1) {
+                data = new String(Base64.decode(data, Base64.DEFAULT));
+            }
 			m_fout.write(data);
 			m_fout.flush();
 			return true;
@@ -222,9 +227,11 @@ public class EUExFile {
 	 * 
 	 * @param len
 	 *            字节数
+     * @param  mode
+     *            是否使用Base64 encode
 	 * @return 字符串
 	 */
-	protected String read(int len) {
+	protected String read(int len, int mode) {
 		int newLen = len;
 		byte[] buffer = null;
 		if (newLen != -1) {
@@ -242,7 +249,12 @@ public class EUExFile {
 				if (!TextUtils.isEmpty(m_key)) {
 					return Rc4Encrypt.decry_RC4(EncodingUtils.getString(buffer, "UTF-8"), m_key);
 				}
-				return EncodingUtils.getString(buffer, "UTF-8");
+                if (mode == 1) {
+                    return Base64.encodeToString(buffer, Base64.DEFAULT);
+                } else {
+                    return EncodingUtils.getString(buffer, "UTF-8");
+                }
+
 			} else {
 				BDebug.i("appcan","m_inputStream is null...");
 				if (m_inPath.startsWith("/")) {

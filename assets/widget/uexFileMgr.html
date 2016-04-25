@@ -64,7 +64,7 @@
 			return;
 		}
 		uexFileMgr.openFile('1', path, '1');
-		uexFileMgr.writeFile('1', '0', data);
+		uexFileMgr.writeFile('1', '2', data);
 		uexFileMgr.closeFile('1');
 
 	}
@@ -75,7 +75,7 @@
 			return;
 		}
 		uexFileMgr.openFile('1', path, '1');
-		uexFileMgr.readFile('1', size);
+		uexFileMgr.readFile('1', size, 1);
 		uexFileMgr.closeFile('1');
 
 	}

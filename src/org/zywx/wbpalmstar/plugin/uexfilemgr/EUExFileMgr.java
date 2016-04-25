@@ -754,17 +754,18 @@ public class EUExFileMgr extends EUExBase {
 	}
 
 	public void readFile(String[] parm) {
-        if (parm.length != 2) {
+        if (parm.length != 3) {
             return;
         }
-        String inOpCode = parm[0], inLen = parm[1];
+        String inOpCode = parm[0], inLen = parm[1], modeStr = parm[2];
 //        if (!BUtility.isNumeric(inOpCode)) {
 //            return;
 //        }
+
         EUExFile object = objectMap.get(inOpCode);
         if (object != null) {
             String resString = object.read(Integer
-                    .parseInt(inLen));
+                    .parseInt(inLen), Integer.parseInt(modeStr));
             if (TextUtils.isEmpty(resString)) {
                 jsCallback(F_CALLBACK_NAME_READFILE, inOpCode,
                         EUExCallback.F_C_TEXT, "");
