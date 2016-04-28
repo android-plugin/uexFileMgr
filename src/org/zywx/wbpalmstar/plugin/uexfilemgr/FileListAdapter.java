@@ -168,11 +168,16 @@ public class FileListAdapter extends BaseAdapter {
 		for (int i = 0, count = getCount(); i < count; i++) {
 			FileBean fileBean = getItem(i);
 			if (fileBean.getFile().isFile()) {
-				listSelectStates.put(i, select);
-				if (select) {
+				listSelectStates.put(i, false);
+				totalSelectedList.remove(fileBean);
+			}
+		}
+		if(select){
+			for (int i = 0, count = getCount(); i < count; i++) {
+				FileBean fileBean = getItem(i);
+				if (fileBean.getFile().isFile()) {
+					listSelectStates.put(i, select);
 					totalSelectedList.add(fileBean);
-				} else {
-					totalSelectedList.remove(fileBean);
 				}
 			}
 		}
