@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <uexplugins>
     <plugin
-        uexName="uexFileMgr" version="3.0.18" build="18">
-        <info>18:修复多选文件时会导致显示选择数量不正确的问题</info>
+        uexName="uexFileMgr" version="3.0.19" build="19">
+        <info>19:修正readFile接口的option参数可以为空</info>
+        <build>18:修复多选文件时会导致显示选择数量不正确的问题</build>
         <build>17.支持Base64读写</build>
         <build>16.修复拒绝服务漏洞的问题</build>
         <build>15.修改对文件的各种操作的opId支持非纯数字（与IOS保持一致）</build>

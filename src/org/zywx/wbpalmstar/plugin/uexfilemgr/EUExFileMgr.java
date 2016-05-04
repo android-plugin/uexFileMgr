@@ -562,13 +562,13 @@ public class EUExFileMgr extends EUExBase {
 				}
 
 				jsCallback(F_CALLBACK_NAME_GETFILETYPEBYID, 0,
-                        EUExCallback.F_C_INT, resValue);
+						EUExCallback.F_C_INT, resValue);
 			}
 		} catch (SecurityException e) {
 			Toast.makeText(
 					m_context,
 					ResoureFinder.getInstance().getString(mContext,
-                            "error_no_permisson_RW"), Toast.LENGTH_SHORT)
+							"error_no_permisson_RW"), Toast.LENGTH_SHORT)
 					.show();
 		}
 
@@ -754,13 +754,16 @@ public class EUExFileMgr extends EUExBase {
 	}
 
 	public void readFile(String[] parm) {
-        if (parm.length != 3) {
+        if (parm.length <= 2) {
             return;
         }
-        String inOpCode = parm[0], inLen = parm[1], modeStr = parm[2];
+        String inOpCode = parm[0], inLen = parm[1], modeStr = "0";
 //        if (!BUtility.isNumeric(inOpCode)) {
 //            return;
 //        }
+		if (parm.length > 2) {
+			modeStr = parm[2];
+		}
 
         EUExFile object = objectMap.get(inOpCode);
         if (object != null) {
