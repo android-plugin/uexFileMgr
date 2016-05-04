@@ -767,10 +767,8 @@ public class EUExFileMgr extends EUExBase {
 
         EUExFile object = objectMap.get(inOpCode);
         if (object != null) {
-            Log.i("TAG", "----start read:");
             String resString = object.read(Integer
                     .parseInt(inLen), Integer.parseInt(modeStr));
-            Log.i("TAG", "----readFile:" + resString);
             if (TextUtils.isEmpty(resString)) {
                 jsCallback(F_CALLBACK_NAME_READFILE, inOpCode,
                         EUExCallback.F_C_TEXT, "");
