@@ -1738,8 +1738,8 @@ public class EUExFileMgr extends EUExBase {
     private void jsCallback(String inCallbackName, String inOpCode,
             int inDataType, int inData) {
         String js = SCRIPT_HEADER + "if(" + inCallbackName + "){"
-                + inCallbackName + "('" + inOpCode + "'," + inDataType + ",'"
-                + inData + "'" + SCRIPT_TAIL;
+                + inCallbackName + "('" + inOpCode + "'," + inDataType + ","
+                + inData + SCRIPT_TAIL;
         onCallback(js);
     }
     
