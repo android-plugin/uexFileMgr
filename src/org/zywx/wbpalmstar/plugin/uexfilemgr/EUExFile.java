@@ -10,10 +10,12 @@ import org.zywx.wbpalmstar.base.BDebug;
 import org.zywx.wbpalmstar.base.BUtility;
 import org.zywx.wbpalmstar.base.ResoureFinder;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -173,6 +175,8 @@ public class EUExFile {
 	 * @return 是否写入成功
 	 */
 	protected boolean write(String data, int inMode) {
+		FileOutputStream fos = null;
+		BufferedOutputStream bos = null;
 		if (m_inPath == null || m_inPath.length() == 0) {
 			return false;
 		}
@@ -194,17 +198,47 @@ public class EUExFile {
 			}
             //如果设置需要进行Base64运算
             if (inMode > 1) {
-                data = new String(Base64.decode(data, Base64.DEFAULT));
+                boolean isAppend = false;
+                if (inMode == 3) {//append 1 + base64 2
+                    isAppend = true;
+                }
+                fos = new FileOutputStream(file, isAppend);
+                bos = new BufferedOutputStream(fos);
+                byte [] bytes = Base64.decode(data, Base64.DEFAULT);
+                bos.write(bytes);
+                bos.flush();
+            } else {
+                m_fout.write(data);
+                m_fout.flush();
             }
-			m_fout.write(data);
-			m_fout.flush();
-			return true;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return false;
-		}
-
-	}
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            if (bos != null) {
+                try {
+                    bos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (fos != null) {
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (m_fout != null) {
+                try {
+                    m_fout.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 
 	protected void write(byte[] data) {
 
