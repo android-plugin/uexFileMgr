@@ -78,4 +78,17 @@
     <string name="plugin_fileMgr_invalid_params">Invalid Params!</string>
     <string name="plugin_fileMgr_json_format_error">JSON Format Error!</string>
     <string name="plugin_fileMgr_need_keywords">Need Keywords</string>
+
+    <string name="plugin_file_type_archive">压缩包</string>
+    <string name="plugin_file_type_certificate">证书</string>
+    <string name="plugin_file_type_directory">目录</string>
+    <string name="plugin_file_type_document">文件</string>
+    <string name="plugin_file_type_drawing">图片</string>
+    <string name="plugin_file_type_excel">EXCEL</string>
+    <string name="plugin_file_type_image">照片</string>
+    <string name="plugin_file_type_music">音乐</string>
+    <string name="plugin_file_type_pdf">PDF</string>
+    <string name="plugin_file_type_power_point">PPT</string>
+    <string name="plugin_file_type_word">WORD</string>
+    <string name="plugin_file_multi_file">多选</string>
 </resources>

@@ -30,4 +30,19 @@
         path,redirecting to SDCard...</string>
     <string name="plugin_fileMgr_folder">folder</string>
     <string name="plugin_file_not_exist">File does not exist!</string>
+
+    <string name="plugin_file_type_archive">Archive</string>
+    <string name="plugin_file_type_certificate">Certificate</string>
+    <string name="plugin_file_type_directory">Directory</string>
+    <string name="plugin_file_type_document">File</string>
+    <string name="plugin_file_type_drawing">Picture</string>
+    <string name="plugin_file_type_excel">Spreadsheet</string>
+    <string name="plugin_file_type_image">Image</string>
+    <string name="plugin_file_type_music">Music</string>
+    <string name="plugin_file_type_video">Video</string>
+    <string name="plugin_file_type_pdf">PDF document</string>
+    <string name="plugin_file_type_power_point">Presentation</string>
+    <string name="plugin_file_type_word">Document</string>
+    <string name="plugin_file_type_apk">APK</string>
+    <string name="plugin_file_multi_file">Multi</string>
 </resources>
