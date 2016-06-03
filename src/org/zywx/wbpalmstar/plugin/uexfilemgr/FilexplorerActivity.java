@@ -23,8 +23,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.zywx.wbpalmstar.base.BDebug;
 import org.zywx.wbpalmstar.base.ResoureFinder;
 
@@ -233,9 +231,8 @@ public class FilexplorerActivity extends Activity implements OnItemClickListener
             notifyItemSelectChanged();
         } else if (v == btnSelectConfirm) {
             ArrayList<FileBean> arrayList = fileListAdapter.getTotalSelectedList();
-            String json = combinationJson(arrayList);
             final Intent intent = new Intent(getIntent().getAction());
-            intent.putExtra(F_INTENT_KEY_RETURN_EXPLORER_PATH, json);
+            intent.putExtra(F_INTENT_KEY_RETURN_EXPLORER_PATH, getFileList(arrayList));
             setResult(RESULT_OK, intent);
             finish();
         }
@@ -399,17 +396,13 @@ public class FilexplorerActivity extends Activity implements OnItemClickListener
         super.onDestroy();
     }
 
-    private String combinationJson(ArrayList<FileBean> list) {
-        JSONObject json = new JSONObject();
+    private ArrayList<String> getFileList(ArrayList<FileBean> list) {
+        ArrayList<String> strings=new ArrayList<String>();
         int index = 0;
         for (FileBean b : list) {
-            try {
-                json.put(String.valueOf(index++), b.getFile().getAbsolutePath());
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            strings.add(b.getFile().getAbsolutePath());
         }
-        return json.toString();
+        return strings;
     }
 
     @Override

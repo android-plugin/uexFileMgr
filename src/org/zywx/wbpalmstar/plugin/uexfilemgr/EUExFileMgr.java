@@ -37,6 +37,7 @@ import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 
 public class EUExFileMgr extends EUExBase {
 
@@ -1216,13 +1217,13 @@ public class EUExFileMgr extends EUExBase {
                 if (resultCode != Activity.RESULT_OK) {
                     return;
                 }
-                String jsonPath = data
-                        .getStringExtra(FilexplorerActivity.F_INTENT_KEY_RETURN_EXPLORER_PATH);
+                List<String> paths = (List<String>) data
+                        .getSerializableExtra(FilexplorerActivity.F_INTENT_KEY_RETURN_EXPLORER_PATH);
                 if (mExplorerCallbackId != -1) {
-                    callbackToJs(mExplorerCallbackId, false, jsonPath);
+                    callbackToJs(mExplorerCallbackId, false, DataHelper.gson.toJsonTree(paths));
                 } else {
                     jsCallback(EUExFileMgr.F_CALLBACK_NAME_MULTI_EXPLORER, 0,
-                            EUExCallback.F_C_JSON, jsonPath);
+                            EUExCallback.F_C_JSON, paths.toString());
                 }
             }
         } catch (JSONException e) {
@@ -1585,7 +1586,7 @@ public class EUExFileMgr extends EUExBase {
         @Override
         protected void onPostExecute(ResultFileSizeVO result) {
             if (mCallbackId!=-1){
-                callbackToJs(mCallbackId,false,result);
+                callbackToJs(mCallbackId,false,DataHelper.gson.toJsonTree(result));
             }else{
                 if (result != null) {
                     callBackPluginJs(JsConst.CALLBACK_GET_FILE_SIZE_BY_PATH,
@@ -1643,7 +1644,6 @@ public class EUExFileMgr extends EUExBase {
                     break;
                 case 3: //精确匹配，同时包含文件夹
                     if (keywords == null || keywords.length() == 0) {
-                        Toast.makeText(m_context, finder.getString("plugin_fileMgr_need_keywords"), Toast.LENGTH_SHORT).show();
                         jsonObject.put("isSuccess", false);
                         return jsonObject;
                     }
@@ -1657,16 +1657,14 @@ public class EUExFileMgr extends EUExBase {
                     break;
                 case 6://递归搜索，返回结果包含文件，且精确匹配
                     if (keywords == null || keywords.length() == 0) {
-                        Toast.makeText(m_context, finder.getString("plugin_fileMgr_need_keywords"), Toast.LENGTH_SHORT).show();
-                        jsonObject.put("isSuccess", false);
+                         jsonObject.put("isSuccess", false);
                         return jsonObject;
                     }
                     getAllFiles(path, fileList, suffixes, keywords, true, true);
                     break;
                 case 7: //递归搜索，返回结果包含文件，文件夹，且精确匹配
                     if (keywords == null || keywords.length() == 0) {
-                        Toast.makeText(m_context, finder.getString("plugin_fileMgr_need_keywords"), Toast.LENGTH_SHORT).show();
-                        jsonObject.put("isSuccess", false);
+                          jsonObject.put("isSuccess", false);
                         return jsonObject;
                     }
                     getAllFiles(path, fileList, suffixes, keywords, true, true);
