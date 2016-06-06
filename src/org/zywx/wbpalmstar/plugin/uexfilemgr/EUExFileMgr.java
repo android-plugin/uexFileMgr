@@ -1262,9 +1262,9 @@ public class EUExFileMgr extends EUExBase {
 
     public void renameFile(final String[] params) {
         String jsonString = params[0];
-        int callbackId=-1;
-        if (params.length>1){
-            callbackId= Integer.parseInt(params[1]);
+        int callbackId = -1;
+        if (params.length > 1) {
+            callbackId = Integer.parseInt(params[1]);
         }
         String oldFilePath = null;
         String newPath = null;
@@ -1298,9 +1298,9 @@ public class EUExFileMgr extends EUExBase {
             resultJson.put("result", result);
         } catch (JSONException e) {
         }
-        if (callbackId!=-1){
-            callbackToJs(callbackId,false,resultJson);
-        }else{
+        if (callbackId != -1) {
+            callbackToJs(callbackId, false, resultJson);
+        } else {
             String js = SCRIPT_HEADER + "if(" + F_CALLBACK_NAME_RENAMEFILE + "){"
                     + F_CALLBACK_NAME_RENAMEFILE + "('" + resultJson.toString() + "');}";
             onCallback(js);
@@ -1323,52 +1323,52 @@ public class EUExFileMgr extends EUExBase {
         mHandler.sendMessage(msg);
     }
 
-    public void searchMsg(final String[] params) {
+    public void searchMsg(final String[] params) throws JSONException {
         if (params.length < 1) {
             Toast.makeText(m_context, finder.getString("plugin_fileMgr_invalid_params"), Toast.LENGTH_SHORT).show();
             return;
         }
+
+        JSONObject jsonObject = new JSONObject(params[0]);
+        int callbackId = -1;
+        if (params.length > 1) {
+            callbackId = Integer.parseInt(params[1]);
+        }
+        String path = jsonObject.getString("path");
+        int option = 0;
+        JSONArray keywordsArray = null;
+        JSONArray suffixes = null;
+
+        if (jsonObject.has("option")) {
+            option = jsonObject.getInt("option");
+        }
+        if (jsonObject.has("keywords")) {
+            keywordsArray = jsonObject.getJSONArray("keywords");
+        }
+        if (jsonObject.has("suffixes")) {
+            suffixes = jsonObject.getJSONArray("suffixes");
+        }
+
+        final String realPath = BUtility.makeRealPath(
+                BUtility.makeUrl(mBrwView.getCurrentUrl(), path),
+                mBrwView.getCurrentWidget().m_widgetPath,
+                mBrwView.getCurrentWidget().m_wgtType);
+        final int optionTemp = option;
+        final JSONArray keywordsArrayTemp = keywordsArray;
+        final JSONArray suffixesTemp = suffixes;
+
+        final int finalCallbackId = callbackId;
         new Thread(new Runnable() {
             @Override
             public void run() {
-                try {
-                    JSONObject jsonObject = new JSONObject(params[0]);
-                    int callbackId=-1;
-                    if (params.length>1) {
-                        callbackId= Integer.parseInt(params[1]);
-                    }
-                    String path = jsonObject.getString("path");
-                    int option = 0;
-                    JSONArray keywordsArray = null;
-                    JSONArray suffixes = null;
 
-                    if (jsonObject.has("option")) {
-                        option = jsonObject.getInt("option");
-                    }
-                    if (jsonObject.has("keywords")) {
-                        keywordsArray = jsonObject.getJSONArray("keywords");
-                    }
-                    if (jsonObject.has("suffixes")) {
-                        suffixes = jsonObject.getJSONArray("suffixes");
-                    }
-
-                    final String realPath = BUtility.makeRealPath(
-                            BUtility.makeUrl(mBrwView.getCurrentUrl(), path),
-                            mBrwView.getCurrentWidget().m_widgetPath,
-                            mBrwView.getCurrentWidget().m_wgtType);
-                    final int optionTemp = option;
-                    final JSONArray keywordsArrayTemp = keywordsArray;
-                    final JSONArray suffixesTemp = suffixes;
-                    JSONObject resultJson = searchFile(realPath, optionTemp, keywordsArrayTemp, suffixesTemp);
-                    if (callbackId!=-1){
-                        callbackToJs(callbackId,false,resultJson);
-                    }else{
-                        String js = SCRIPT_HEADER + "if(" + F_CALLBACK_NAME_SEARCH + "){"
-                                + F_CALLBACK_NAME_SEARCH + "('" + resultJson.toString() + "');}";
-                        onCallback(js);
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                JSONObject resultJson = searchFile(realPath, optionTemp, keywordsArrayTemp, suffixesTemp);
+                if (finalCallbackId != -1) {
+                    callbackToJs(finalCallbackId, false, resultJson);
+                } else {
+                    String js = SCRIPT_HEADER + "if(" + F_CALLBACK_NAME_SEARCH + "){"
+                            + F_CALLBACK_NAME_SEARCH + "('" + resultJson.toString() + "');}";
+                    onCallback(js);
                 }
             }
         }).start();
@@ -1382,9 +1382,9 @@ public class EUExFileMgr extends EUExBase {
                     DataHelper.gson.toJson(result));
             return;
         }
-        int callbackId=-1;
-        if (params.length>1){
-            callbackId= Integer.parseInt(params[1]);
+        int callbackId = -1;
+        if (params.length > 1) {
+            callbackId = Integer.parseInt(params[1]);
         }
         FileSizeDataVO dataVO = DataHelper.gson.fromJson(params[0], FileSizeDataVO.class);
         if (dataVO != null && !TextUtils.isEmpty(dataVO.getPath())) {
@@ -1411,9 +1411,9 @@ public class EUExFileMgr extends EUExBase {
             return;
         }
         final String inOpCode = parm[0], srcFilePath = parm[1], objPath = parm[2];
-        int callbackId=-1;
-        if (parm.length>3){
-            callbackId= Integer.parseInt(parm[3]);
+        int callbackId = -1;
+        if (parm.length > 3) {
+            callbackId = Integer.parseInt(parm[3]);
         }
         boolean flag = false;
         if (srcFilePath.startsWith(BUtility.F_Widget_RES_SCHEMA)) {
@@ -1464,26 +1464,26 @@ public class EUExFileMgr extends EUExBase {
                         }
                         File copied = new File(objRealPath + temp.getName());
                         if (copied.exists() && copied.length() == length) {
-                            if (finalCallbackId !=-1){
-                                callbackToJs(finalCallbackId,false,true);
-                            }else{
+                            if (finalCallbackId != -1) {
+                                callbackToJs(finalCallbackId, false, true);
+                            } else {
                                 jsCallback(F_CALLBACK_NAME_COPYFILE, inOpCode,
                                         EUExCallback.F_C_INT, EUExCallback.F_C_SUCCESS);
                             }
                         } else {
-                            if (finalCallbackId !=-1){
-                                callbackToJs(finalCallbackId,false,false);
-                            }else{
+                            if (finalCallbackId != -1) {
+                                callbackToJs(finalCallbackId, false, false);
+                            } else {
                                 jsCallback(F_CALLBACK_NAME_COPYFILE, inOpCode,
                                         EUExCallback.F_C_INT, EUExCallback.F_C_FAILED);
                             }
                         }
                     } catch (IOException e) {
-                        BDebug.e("Failed to copy asset file: " , srcFileRealPath, e);
+                        BDebug.e("Failed to copy asset file: ", srcFileRealPath, e);
 
-                        if (finalCallbackId !=-1){
-                            callbackToJs(finalCallbackId,false,false);
-                        }else{
+                        if (finalCallbackId != -1) {
+                            callbackToJs(finalCallbackId, false, false);
+                        } else {
                             jsCallback(F_CALLBACK_NAME_COPYFILE, inOpCode,
                                     EUExCallback.F_C_INT, EUExCallback.F_C_FAILED);
                         }
@@ -1513,25 +1513,25 @@ public class EUExFileMgr extends EUExBase {
                         }
                         File copied = new File(objRealPath + temp.getName());
                         if (copied.exists() && copied.length() == temp.length()) {
-                            if (finalCallbackId !=-1){
-                                callbackToJs(finalCallbackId,false,true);
-                            }else{
+                            if (finalCallbackId != -1) {
+                                callbackToJs(finalCallbackId, false, true);
+                            } else {
                                 jsCallback(F_CALLBACK_NAME_COPYFILE, inOpCode,
                                         EUExCallback.F_C_INT, EUExCallback.F_C_SUCCESS);
                             }
                         } else {
-                            if (finalCallbackId !=-1){
-                                callbackToJs(finalCallbackId,false,false);
-                            }else{
+                            if (finalCallbackId != -1) {
+                                callbackToJs(finalCallbackId, false, false);
+                            } else {
                                 jsCallback(F_CALLBACK_NAME_COPYFILE, inOpCode,
                                         EUExCallback.F_C_INT, EUExCallback.F_C_FAILED);
                             }
                         }
                     } catch (IOException e) {
-                        BDebug.e("Failed to copy asset file: " , srcFileRealPath, e);
-                        if (finalCallbackId !=-1){
-                            callbackToJs(finalCallbackId,false,false);
-                        }else{
+                        BDebug.e("Failed to copy asset file: ", srcFileRealPath, e);
+                        if (finalCallbackId != -1) {
+                            callbackToJs(finalCallbackId, false, false);
+                        } else {
                             jsCallback(F_CALLBACK_NAME_COPYFILE, inOpCode,
                                     EUExCallback.F_C_INT, EUExCallback.F_C_FAILED);
                         }
@@ -1550,8 +1550,9 @@ public class EUExFileMgr extends EUExBase {
     private class GetFileSizeAsyncTask extends AsyncTask<String, String, ResultFileSizeVO> {
 
         int mCallbackId;
-        public GetFileSizeAsyncTask(int callbackId){
-            mCallbackId=callbackId;
+
+        public GetFileSizeAsyncTask(int callbackId) {
+            mCallbackId = callbackId;
         }
 
         @Override
@@ -1585,9 +1586,9 @@ public class EUExFileMgr extends EUExBase {
 
         @Override
         protected void onPostExecute(ResultFileSizeVO result) {
-            if (mCallbackId!=-1){
-                callbackToJs(mCallbackId,false,DataHelper.gson.toJsonTree(result));
-            }else{
+            if (mCallbackId != -1) {
+                callbackToJs(mCallbackId, false, DataHelper.gson.toJsonTree(result));
+            } else {
                 if (result != null) {
                     callBackPluginJs(JsConst.CALLBACK_GET_FILE_SIZE_BY_PATH,
                             DataHelper.gson.toJson(result));
@@ -1604,7 +1605,11 @@ public class EUExFileMgr extends EUExBase {
         Bundle bundle = message.getData();
         switch (message.what) {
             case MSG_SEARCH:
-                searchMsg(bundle.getStringArray(BUNDLE_DATA));
+                try {
+                    searchMsg(bundle.getStringArray(BUNDLE_DATA));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
                 break;
             default:
                 super.onHandleMessage(message);
@@ -1657,14 +1662,14 @@ public class EUExFileMgr extends EUExBase {
                     break;
                 case 6://递归搜索，返回结果包含文件，且精确匹配
                     if (keywords == null || keywords.length() == 0) {
-                         jsonObject.put("isSuccess", false);
+                        jsonObject.put("isSuccess", false);
                         return jsonObject;
                     }
                     getAllFiles(path, fileList, suffixes, keywords, true, true);
                     break;
                 case 7: //递归搜索，返回结果包含文件，文件夹，且精确匹配
                     if (keywords == null || keywords.length() == 0) {
-                          jsonObject.put("isSuccess", false);
+                        jsonObject.put("isSuccess", false);
                         return jsonObject;
                     }
                     getAllFiles(path, fileList, suffixes, keywords, true, true);
