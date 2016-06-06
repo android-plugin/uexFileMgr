@@ -43,28 +43,31 @@ function createDir(path) {
 	uexFileMgr.closeFile('20');
 }
 
-function writeFile(path, data) {
-	if (!isnum('1')) {
-		alert("Error");
-		return;
+	function writeFile(path, data) {
+		if (!isnum('1')) {
+			alert("Error");
+			return;
+		}
+		uexFileMgr.openFile('1', path, '1');
+		uexFileMgr.writeFile('1', '1', data,function(result){
+      alert(result);
+    });
+		uexFileMgr.closeFile('1');
+
 	}
-	uexFileMgr.openFile('1', path, '1');
-	uexFileMgr.writeFile('1', '1', data);
-	uexFileMgr.closeFile('1');
 
-}
+	function readFile(path, size) {
+		if (!isnum('1')) {
+			alert("Error");
+			return;
+		}
+		uexFileMgr.openFile('1', path, '1');
+		uexFileMgr.readFile('1', size,0,function(result){
+      alert(result);
+    });
+		uexFileMgr.closeFile('1');
 
-function readFile(path, size) {
-	if (!isnum('1')) {
-		alert("Error");
-		return;
 	}
-	uexFileMgr.openFile('1', path, '1');
-	uexFileMgr.readFile('1', size);
-	uexFileMgr.closeFile('1');
-
-}
-
 function isFileExistByID(path) {
 	if (!isnum('2')) {
 		alert("Error");

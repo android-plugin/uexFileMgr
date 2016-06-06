@@ -809,60 +809,93 @@ public class EUExFileMgr extends EUExBase {
         return false;
     }
 
-    public boolean writeFile(String[] parm) {
+    public void writeFile(String[] parm) {
         if (parm.length < 3) {
-            return false;
+            return ;
         }
-        String inOpCode = parm[0], inMode = parm[1], inData = parm[2];
-//		if (!BUtility.isNumeric(inOpCode)) {
-//			return;
-//		}
-        EUExFile object = objectMap.get(inOpCode);
+        final String inOpCode = parm[0], inMode = parm[1], inData = parm[2];
+        int callbackId=-1;
+        if(parm.length>3 ){
+            callbackId= Integer.parseInt(parm[3]);
+        }
+        final EUExFile object = objectMap.get(inOpCode);
         if (object != null) {
-            boolean result = object.write(inData, Integer.parseInt(inMode));
-            if (result) {
-                jsCallback(F_CALLBACK_NAME_WRITEFILE, inOpCode,
-                        EUExCallback.F_C_INT, EUExCallback.F_C_SUCCESS);
-            } else {
-                jsCallback(F_CALLBACK_NAME_WRITEFILE, inOpCode,
-                        EUExCallback.F_C_INT, EUExCallback.F_C_FAILED);
-            }
-            return result;
+            final int finalCallbackId = callbackId;
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    boolean result = object.write(inData, Integer.parseInt(inMode));
+                    if(finalCallbackId !=-1 ){
+                        callbackToJs(finalCallbackId,false,result);
+                    }else{
+                        if (result) {
+                            jsCallback(F_CALLBACK_NAME_WRITEFILE, inOpCode,
+                                    EUExCallback.F_C_INT, EUExCallback.F_C_SUCCESS);
+                        } else {
+                            jsCallback(F_CALLBACK_NAME_WRITEFILE, inOpCode,
+                                    EUExCallback.F_C_INT, EUExCallback.F_C_FAILED);
+                        }
+                    }
+
+                }
+            }).start();
+
         } else {
-            errorCallback(inOpCode,
-                    EUExCallback.F_E_UEXFILEMGR_WRITEFILE_1,
-                    ResoureFinder.getInstance().getString(mContext,
-                            "error_parameter"));
-            return false;
-        }
+            if (callbackId!=-1){
+                callbackToJs(callbackId,false,false);
+            }else{
+                errorCallback(inOpCode,
+                        EUExCallback.F_E_UEXFILEMGR_WRITEFILE_1,
+                        ResoureFinder.getInstance().getString(mContext,
+                                "error_parameter"));
+            }
+          }
     }
 
-    public String readFile(String[] parm) {
+    public void readFile(String[] parm) {
         if (parm.length < 2) {
-            return null;
+            return;
         }
-        String inOpCode = parm[0], inLen = parm[1], modeStr = "0";
-//        if (!BUtility.isNumeric(inOpCode)) {
-//            return;
-//        }
+        final String inOpCode = parm[0];
+        final String inLen = parm[1];
+        String modeStr = "0";
+
         if (parm.length > 2) {
             modeStr = parm[2];
         }
-
-        EUExFile object = objectMap.get(inOpCode);
+        int callbackId=-1;
+        if(parm.length>3 ){
+            callbackId= Integer.parseInt(parm[3]);
+        }
+        final EUExFile object = objectMap.get(inOpCode);
         if (object != null) {
-            String resString = object.read(Integer
-                    .parseInt(inLen), Integer.parseInt(modeStr));
-            String result = TextUtils.isEmpty(resString) ? "" : BUtility.transcoding(resString);
-            jsCallback(F_CALLBACK_NAME_READFILE, inOpCode,
-                    EUExCallback.F_C_TEXT, result);
-            return result;
+            final String finalModeStr = modeStr;
+            final int finalCallbackId = callbackId;
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    String resString = object.read(Integer
+                            .parseInt(inLen), Integer.parseInt(finalModeStr));
+                    String result = TextUtils.isEmpty(resString) ? "" : BUtility.transcoding(resString);
+                    if (finalCallbackId !=-1){
+                        callbackToJs(finalCallbackId,false,result);
+                    }else{
+                        jsCallback(F_CALLBACK_NAME_READFILE, inOpCode,
+                                EUExCallback.F_C_TEXT, result);
+                    }
+
+                }
+            }).start();
+
         } else {
-            errorCallback(inOpCode,
-                    EUExCallback.F_E_UEXFILEMGR_READFILE_1,
-                    ResoureFinder.getInstance().getString(mContext,
-                            "error_parameter"));
-            return "";
+            if (callbackId!=-1){
+                callbackToJs(callbackId,false,"");
+            }else {
+                errorCallback(inOpCode,
+                        EUExCallback.F_E_UEXFILEMGR_READFILE_1,
+                        ResoureFinder.getInstance().getString(mContext,
+                                "error_parameter"));
+            }
         }
     }
 
