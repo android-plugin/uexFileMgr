@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest>
 
+    <!-- uexFileMgr -->
     <activity
         android:name="org.zywx.wbpalmstar.plugin.uexfilemgr.FilexplorerActivity"
         android:configChanges="orientation|keyboardHidden"
         android:exported="false"
-        android:theme="@style/Style_platform_no_title_and_background" />
+        android:theme="@android:style/Theme.DeviceDefault.Light.NoActionBar" />
 
     <uses-permission android:name="android.permission.MOUNT_UNMOUNT_FILESYSTEMS" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />

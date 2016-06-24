@@ -4,7 +4,7 @@
     android:versionName="1.0" >
 
     <uses-sdk
-        android:minSdkVersion="11"
+        android:minSdkVersion="14"
         android:targetSdkVersion="15" />
 
     <application
@@ -42,7 +42,7 @@
             android:name="org.zywx.wbpalmstar.plugin.uexfilemgr.FilexplorerActivity"
             android:configChanges="orientation|keyboardHidden"
             android:exported="false"
-            android:theme="@style/Style_platform_no_title_and_background" />
+            android:theme="@android:style/Theme.DeviceDefault.Light.NoActionBar" />
     </application>
 
     <uses-permission android:name="android.permission.RECORD_AUDIO" />

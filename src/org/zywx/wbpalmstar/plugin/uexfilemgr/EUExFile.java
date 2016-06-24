@@ -2,6 +2,7 @@ package org.zywx.wbpalmstar.plugin.uexfilemgr;
 
 import android.content.Context;
 import android.text.TextUtils;
+import android.util.Base64;
 import android.widget.Toast;
 
 import org.apache.http.util.EncodingUtils;
@@ -9,10 +10,12 @@ import org.zywx.wbpalmstar.base.BDebug;
 import org.zywx.wbpalmstar.base.BUtility;
 import org.zywx.wbpalmstar.base.ResoureFinder;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -172,6 +175,8 @@ public class EUExFile {
 	 * @return 是否写入成功
 	 */
 	protected boolean write(String data, int inMode) {
+		FileOutputStream fos = null;
+		BufferedOutputStream bos = null;
 		if (m_inPath == null || m_inPath.length() == 0) {
 			return false;
 		}
@@ -181,7 +186,7 @@ public class EUExFile {
 				m_fout = null;
 			}
 			boolean mode = false;
-			if (1 == inMode) {
+			if (1 == inMode || 3 == inMode) {
 				mode = true;
 			} else {
 				mode = false;
@@ -191,15 +196,49 @@ public class EUExFile {
 			if (!TextUtils.isEmpty(m_key)) {
 				data = Rc4Encrypt.encry_RC4_string(data, m_key);
 			}
-			m_fout.write(data);
-			m_fout.flush();
-			return true;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return false;
-		}
-
-	}
+            //如果设置需要进行Base64运算
+            if (inMode > 1) {
+                boolean isAppend = false;
+                if (inMode == 3) {//append 1 + base64 2
+                    isAppend = true;
+                }
+                fos = new FileOutputStream(file, isAppend);
+                bos = new BufferedOutputStream(fos);
+                byte [] bytes = Base64.decode(data, Base64.DEFAULT);
+                bos.write(bytes);
+                bos.flush();
+            } else {
+                m_fout.write(data);
+                m_fout.flush();
+            }
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            if (bos != null) {
+                try {
+                    bos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (fos != null) {
+                try {
+                    fos.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (m_fout != null) {
+                try {
+                    m_fout.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
 
 	protected void write(byte[] data) {
 
@@ -222,9 +261,11 @@ public class EUExFile {
 	 * 
 	 * @param len
 	 *            字节数
+     * @param  mode
+     *            是否使用Base64 encode
 	 * @return 字符串
 	 */
-	protected String read(int len) {
+	protected String read(int len, int mode) {
 		int newLen = len;
 		byte[] buffer = null;
 		if (newLen != -1) {
@@ -242,7 +283,12 @@ public class EUExFile {
 				if (!TextUtils.isEmpty(m_key)) {
 					return Rc4Encrypt.decry_RC4(EncodingUtils.getString(buffer, "UTF-8"), m_key);
 				}
-				return EncodingUtils.getString(buffer, "UTF-8");
+                if (mode == 1) {
+                    return Base64.encodeToString(buffer, Base64.DEFAULT);
+                } else {
+                    return EncodingUtils.getString(buffer, "UTF-8");
+                }
+
 			} else {
 				BDebug.i("appcan","m_inputStream is null...");
 				if (m_inPath.startsWith("/")) {
