@@ -21,7 +21,7 @@
         <method name="readFile" />
         <method name="getFileSize" />
         <method name="getFilePath" />
-         <method name="getFileRealPath" />
+        <method name="getFileRealPath" />
         <method name="closeFile" />
         <method name="getReaderOffset" />
         <method name="readPercent" />
@@ -35,5 +35,10 @@
         <method name="search"/>
         <method name="getFileSizeByPath" />
         <method name="copyFile" />
+        <method name="mkdir"/>
+        <method name="create"/>
+        <method name="copy"/>
+        <method name="createWithPassword"/>
+        <method name="openWithPassword"/>
     </plugin>
 </uexplugins>

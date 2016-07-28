@@ -21,7 +21,12 @@ import org.zywx.wbpalmstar.engine.DataHelper;
 import org.zywx.wbpalmstar.engine.EBrowserView;
 import org.zywx.wbpalmstar.engine.universalex.EUExBase;
 import org.zywx.wbpalmstar.engine.universalex.EUExCallback;
+import org.zywx.wbpalmstar.plugin.uexfilemgr.vo.CopyVO;
+import org.zywx.wbpalmstar.plugin.uexfilemgr.vo.CreateVO;
+import org.zywx.wbpalmstar.plugin.uexfilemgr.vo.CreateWithPasswordVO;
 import org.zywx.wbpalmstar.plugin.uexfilemgr.vo.FileSizeDataVO;
+import org.zywx.wbpalmstar.plugin.uexfilemgr.vo.OpenVO;
+import org.zywx.wbpalmstar.plugin.uexfilemgr.vo.OpenWithPasswordVO;
 import org.zywx.wbpalmstar.plugin.uexfilemgr.vo.ResultFileSizeVO;
 import org.zywx.wbpalmstar.widgetone.dataservice.WWidgetData;
 
@@ -90,7 +95,8 @@ public class EUExFileMgr extends EUExBase {
     private static final String BUNDLE_DATA = "data";
     private static final int MSG_SEARCH = 1;
     private static final int CALLBACK_FILE_SIZE_TO_JS = 111;
-
+    public static final String INVALID_ID="-1";
+    private static int sCurrentId=0;
 
     private HashMap<String, EUExFile> objectMap = new HashMap<String, EUExFile>();
     private HashMap<String, String> copyMap = new HashMap<String, String>();
@@ -172,6 +178,22 @@ public class EUExFileMgr extends EUExBase {
         return true;
     }
 
+    public String create(String[] params){
+        CreateVO createVO=DataHelper.gson.fromJson(params[0],CreateVO.class);
+        String opId=createVO.id;
+        if (opId.equals(INVALID_ID)){
+            opId=generateId();
+        }
+        boolean result=createFile(new String[]{opId,createVO.path});
+        return result?opId:null;
+    }
+
+
+    private String generateId(){
+        sCurrentId++;
+        return String.valueOf(sCurrentId);
+    }
+
     /**
      * 创建个文件夹对象
      *
@@ -209,6 +231,10 @@ public class EUExFileMgr extends EUExBase {
         jsCallback(F_CALLBACK_NAME_CREATEDIR, inOpCode,
                 EUExCallback.F_C_INT, EUExCallback.F_C_SUCCESS);
         return true;
+    }
+
+    public boolean mkdir(String[] params){
+        return createDir(new String[]{generateId(),params[0]});
     }
 
     /**
@@ -255,6 +281,15 @@ public class EUExFileMgr extends EUExBase {
             }
             return false;
         }
+    }
+
+    public String open(String[] params){
+        OpenVO openVO=DataHelper.gson.fromJson(params[0],OpenVO.class);
+        if (openVO.id.equals(INVALID_ID)){
+            openVO.id=generateId();
+        }
+        boolean result=openFile(new String[]{openVO.id,openVO.path, String.valueOf(openVO.mode)});
+        return result?openVO.id:null;
     }
 
     /**
@@ -878,7 +913,7 @@ public class EUExFileMgr extends EUExBase {
                             .parseInt(inLen), Integer.parseInt(finalModeStr));
                     String result = TextUtils.isEmpty(resString) ? "" : BUtility.transcoding(resString);
                     if (finalCallbackId !=-1){
-                        callbackToJs(finalCallbackId,false,result);
+                        callbackToJs(finalCallbackId,false,true,result);
                     }else{
                         jsCallback(F_CALLBACK_NAME_READFILE, inOpCode,
                                 EUExCallback.F_C_TEXT, result);
@@ -889,7 +924,7 @@ public class EUExFileMgr extends EUExBase {
 
         } else {
             if (callbackId!=-1){
-                callbackToJs(callbackId,false,"");
+                callbackToJs(callbackId,false,false,"");
             }else {
                 errorCallback(inOpCode,
                         EUExCallback.F_E_UEXFILEMGR_READFILE_1,
@@ -1004,7 +1039,7 @@ public class EUExFileMgr extends EUExBase {
 
     }
 
-    public long getReaderOffset(String[] parm) {
+    public String getReaderOffset(String[] parm) {
         String inOpCode = parm[0];
 //		if (!BUtility.isNumeric(inOpCode)) {
 //			return;
@@ -1016,13 +1051,13 @@ public class EUExFileMgr extends EUExBase {
             jsCallback(F_CALLBACK_NAME_GETREADEROFFSET,
                     inOpCode, EUExCallback.F_C_INT,
                     Integer.parseInt(String.valueOf(res)));
-            return res;
+            return String.valueOf(res);
         } else {
             errorCallback(inOpCode,
                     EUExCallback.F_E_UEXFILEMGR_GETREADEROFFSET_1,
                     ResoureFinder.getInstance().getString(mContext,
                             "error_parameter"));
-            return 0;
+            return null;
         }
 
     }
@@ -1038,11 +1073,15 @@ public class EUExFileMgr extends EUExBase {
             String res = object.readerPercent(Integer.parseInt(inPercent),
                     Integer.parseInt(inLen));
             if (callbackId != -1) {
-                callbackToJs(callbackId, false, res);
+                callbackToJs(callbackId, false,true,res);
             } else {
                 jsCallback(F_CALLBACK_NAME_READPERCENT, inOpCode,
                         EUExCallback.F_C_TEXT, res);
 
+            }
+        }else{
+            if (callbackId != -1) {
+                callbackToJs(callbackId, false,false);
             }
         }
 
@@ -1064,9 +1103,13 @@ public class EUExFileMgr extends EUExBase {
                 jsCallback(F_CALLBACK_NAME_READNEXT, inOpCode,
                         EUExCallback.F_C_TEXT, res);
             } else {
-                callbackToJs(callbackId, false, res);
+                callbackToJs(callbackId, false,true,res);
             }
 
+        }else {
+            if (callbackId != -1) {
+                callbackToJs(callbackId, false,false);
+            }
         }
 
     }
@@ -1087,7 +1130,11 @@ public class EUExFileMgr extends EUExBase {
                 jsCallback(F_CALLBACK_NAME_READPRE, inOpCode,
                         EUExCallback.F_C_TEXT, res);
             } else {
-                callbackToJs(callbackId, false, res);
+                callbackToJs(callbackId, false,true, res);
+            }
+        }else{
+            if (callbackId != -1) {
+                callbackToJs(callbackId, false,false);
             }
         }
 
@@ -1125,6 +1172,20 @@ public class EUExFileMgr extends EUExBase {
         jsCallback(F_CALLBACK_NAME_CREATESECURE, inOpCode,
                 EUExCallback.F_C_INT, EUExCallback.F_C_SUCCESS);
         return true;
+    }
+
+    public String createWithPassword(String[] params){
+        CreateWithPasswordVO createWithPasswordVO=DataHelper.gson
+                .fromJson(params[0],CreateWithPasswordVO.class);
+        if (createWithPasswordVO.id==null){
+            createWithPasswordVO.id=generateId();
+        }
+        boolean result=createSecure(new String[]{
+                createWithPasswordVO.id,
+                createWithPasswordVO.path,
+                createWithPasswordVO.password,
+        });
+        return result?createWithPasswordVO.id:null;
     }
 
     public boolean openSecure(String[] parm) {
@@ -1168,6 +1229,21 @@ public class EUExFileMgr extends EUExBase {
                 return false;
             }
         }
+    }
+
+    public String openWithPassword(String[] params){
+        OpenWithPasswordVO openWithPasswordVO=DataHelper.gson.
+                fromJson(params[0],OpenWithPasswordVO.class);
+        if (openWithPasswordVO.id==null){
+            openWithPasswordVO.id=generateId();
+        }
+        boolean result=openSecure(new String[]{
+                openWithPasswordVO.id,
+                openWithPasswordVO.path,
+                String.valueOf(openWithPasswordVO.mode),
+                openWithPasswordVO.password
+        });
+        return result?openWithPasswordVO.id:null;
     }
 
     public JSONArray getFileListByPath(String[] params) {
@@ -1420,6 +1496,9 @@ public class EUExFileMgr extends EUExBase {
             callbackId = Integer.parseInt(params[1]);
         }
         FileSizeDataVO dataVO = DataHelper.gson.fromJson(params[0], FileSizeDataVO.class);
+        if (dataVO.getId()==null){
+            dataVO.setId(generateId());
+        }
         if (dataVO != null && !TextUtils.isEmpty(dataVO.getPath())) {
             String filePath = BUtility.makeRealPath(
                     BUtility.makeUrl(mBrwView.getCurrentUrl(), dataVO.getPath()),
@@ -1567,6 +1646,110 @@ public class EUExFileMgr extends EUExBase {
                         } else {
                             jsCallback(F_CALLBACK_NAME_COPYFILE, inOpCode,
                                     EUExCallback.F_C_INT, EUExCallback.F_C_FAILED);
+                        }
+                    }
+                }
+            }
+        }).start();
+    }
+
+
+    public void copy(String[] params){
+        CopyVO copyVO=DataHelper.gson.fromJson(params[0],CopyVO.class);
+        final String srcFilePath = copyVO.src, objPath = copyVO.target;
+        int callbackId = -1;
+        if (params.length > 1) {
+            callbackId = Integer.parseInt(params[1]);
+        }
+        boolean flag = false;
+        if (srcFilePath.startsWith(BUtility.F_Widget_RES_SCHEMA)) {
+            flag = true;
+        }
+        final String srcFileRealPath = BUtility.makeRealPath(BUtility.makeUrl(mBrwView.getCurrentUrl(), srcFilePath),
+                mBrwView.getCurrentWidget().m_widgetPath, mBrwView.getCurrentWidget().m_wgtType);
+        Log.i("srcFileRealPath", srcFileRealPath);
+        if (srcFileRealPath.startsWith(BUtility.F_Widget_RES_path)) {
+            flag = true;
+        }
+        final File temp = new File(srcFileRealPath);
+        final String objRealPath = BUtility.makeRealPath(BUtility.makeUrl(mBrwView.getCurrentUrl(), objPath),
+                mBrwView.getCurrentWidget().m_widgetPath, mBrwView.getCurrentWidget().m_wgtType);
+        Log.i("objRealPath", objRealPath + temp.getName());
+
+
+        final boolean finalFlag = flag;
+        final int finalCallbackId = callbackId;
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                FileInputStream fi = null;
+                FileOutputStream fo = null;
+                FileChannel in = null;
+                FileChannel out = null;
+                if (finalFlag && srcFileRealPath != null && srcFileRealPath.startsWith(BUtility.F_Widget_RES_path)) {
+                    InputStream in_a = null;
+                    OutputStream out_a = null;
+                    try {
+                        in_a = mContext.getAssets().open(srcFileRealPath);
+                        int length = in_a.available();
+                        File outFile = new File(objRealPath + temp.getName());
+                        out_a = new FileOutputStream(outFile);
+                        byte[] buffer = new byte[1024];
+                        int read;
+                        while ((read = in_a.read(buffer)) != -1) {
+                            out_a.write(buffer, 0, read);
+                        }
+                        in_a.close();
+                        in_a = null;
+                        out_a.flush();
+                        out_a.close();
+                        out_a = null;
+                        File copied = new File(objRealPath + temp.getName());
+                        if (copied.exists() && copied.length() == length) {
+                            if (finalCallbackId != -1) {
+                                callbackToJs(finalCallbackId, false, true);
+                            }
+                        } else {
+                            if (finalCallbackId != -1) {
+                                callbackToJs(finalCallbackId, false, false);
+                            }
+                        }
+                    } catch (IOException e) {
+                        BDebug.e("Failed to copy asset file: ", srcFileRealPath, e);
+
+                        if (finalCallbackId != -1) {
+                            callbackToJs(finalCallbackId, false, false);
+                        }
+                    }
+                } else {
+                    try {
+                        fi = new FileInputStream(srcFileRealPath);
+                        fo = new FileOutputStream(objRealPath + temp.getName());
+                        in = fi.getChannel();
+                        out = fo.getChannel();
+                        in.transferTo(0, in.size(), out);
+                        in.close();
+                        in = null;
+                        out.close();
+                        out = null;
+                        fo.close();
+                        fo = null;
+                        fi.close();
+                        fi = null;
+                        File copied = new File(objRealPath + temp.getName());
+                        if (copied.exists() && copied.length() == temp.length()) {
+                            if (finalCallbackId != -1) {
+                                callbackToJs(finalCallbackId, false, true);
+                            }
+                        } else {
+                            if (finalCallbackId != -1) {
+                                callbackToJs(finalCallbackId, false, false);
+                            }
+                        }
+                    } catch (IOException e) {
+                        BDebug.e("Failed to copy asset file: ", srcFileRealPath, e);
+                        if (finalCallbackId != -1) {
+                            callbackToJs(finalCallbackId, false, false);
                         }
                     }
                 }
