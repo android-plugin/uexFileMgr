@@ -1341,10 +1341,17 @@ public class EUExFileMgr extends EUExBase {
     }
 
     public String getFileCreateTime(String[] params) {
-        if (params.length < 2) {
+        if (params.length < 1) {
             return null;
         }
-        String inOpCode = params[0], inPath = params[1];
+        String inOpCode=null;
+        String inPath=null;
+        if (params.length==1){
+            inPath=params[0];
+        }else if (params.length==2) {
+            inOpCode=params[0];
+            inPath=params[1];
+        }
 //		if (!BUtility.isNumeric(inOpCode)) {
 //			return;
 //		}
@@ -1353,8 +1360,10 @@ public class EUExFileMgr extends EUExBase {
                 mBrwView.getCurrentWidget().m_widgetPath,
                 mBrwView.getCurrentWidget().m_wgtType);
         String time = FileUtility.getTimeFromSp(mContext, inPath);
-        jsCallback(F_CALLBACK_NAME_GETFILECREATETIME, inOpCode,
-                EUExCallback.F_C_TEXT, time);
+        if (inOpCode!=null) {
+            jsCallback(F_CALLBACK_NAME_GETFILECREATETIME, inOpCode,
+                    EUExCallback.F_C_TEXT, time);
+        }
         return time;
     }
 
