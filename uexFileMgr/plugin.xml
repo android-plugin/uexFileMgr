@@ -40,5 +40,6 @@
         <method name="copy"/>
         <method name="createWithPassword"/>
         <method name="openWithPassword"/>
+        <method name="open"/>
     </plugin>
 </uexplugins>
