@@ -285,7 +285,7 @@ public class EUExFileMgr extends EUExBase {
 
     public String open(String[] params){
         OpenVO openVO=DataHelper.gson.fromJson(params[0],OpenVO.class);
-        if (openVO.id.equals(INVALID_ID)){
+        if (openVO.id==null){
             openVO.id=generateId();
         }
         boolean result=openFile(new String[]{openVO.id,openVO.path, String.valueOf(openVO.mode)});
