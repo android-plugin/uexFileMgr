@@ -913,7 +913,7 @@ public class EUExFileMgr extends EUExBase {
                             .parseInt(inLen), Integer.parseInt(finalModeStr));
                     String result = TextUtils.isEmpty(resString) ? "" : BUtility.transcoding(resString);
                     if (finalCallbackId !=-1){
-                        callbackToJs(finalCallbackId,false,true,result);
+                        callbackToJs(finalCallbackId,false,false,result);
                     }else{
                         jsCallback(F_CALLBACK_NAME_READFILE, inOpCode,
                                 EUExCallback.F_C_TEXT, result);
@@ -924,7 +924,7 @@ public class EUExFileMgr extends EUExBase {
 
         } else {
             if (callbackId!=-1){
-                callbackToJs(callbackId,false,false,"");
+                callbackToJs(callbackId,false,true,"");
             }else {
                 errorCallback(inOpCode,
                         EUExCallback.F_E_UEXFILEMGR_READFILE_1,
@@ -1073,7 +1073,7 @@ public class EUExFileMgr extends EUExBase {
             String res = object.readerPercent(Integer.parseInt(inPercent),
                     Integer.parseInt(inLen));
             if (callbackId != -1) {
-                callbackToJs(callbackId, false,true,res);
+                callbackToJs(callbackId, false,false,res);
             } else {
                 jsCallback(F_CALLBACK_NAME_READPERCENT, inOpCode,
                         EUExCallback.F_C_TEXT, res);
@@ -1081,7 +1081,7 @@ public class EUExFileMgr extends EUExBase {
             }
         }else{
             if (callbackId != -1) {
-                callbackToJs(callbackId, false,false);
+                callbackToJs(callbackId, false,true);
             }
         }
 
@@ -1103,12 +1103,12 @@ public class EUExFileMgr extends EUExBase {
                 jsCallback(F_CALLBACK_NAME_READNEXT, inOpCode,
                         EUExCallback.F_C_TEXT, res);
             } else {
-                callbackToJs(callbackId, false,true,res);
+                callbackToJs(callbackId, false,false,res);
             }
 
         }else {
             if (callbackId != -1) {
-                callbackToJs(callbackId, false,false);
+                callbackToJs(callbackId, false,true);
             }
         }
 
@@ -1130,11 +1130,11 @@ public class EUExFileMgr extends EUExBase {
                 jsCallback(F_CALLBACK_NAME_READPRE, inOpCode,
                         EUExCallback.F_C_TEXT, res);
             } else {
-                callbackToJs(callbackId, false,true, res);
+                callbackToJs(callbackId, false,false, res);
             }
         }else{
             if (callbackId != -1) {
-                callbackToJs(callbackId, false,false);
+                callbackToJs(callbackId, false,true);
             }
         }
 
@@ -1716,18 +1716,18 @@ public class EUExFileMgr extends EUExBase {
                         File copied = new File(objRealPath + temp.getName());
                         if (copied.exists() && copied.length() == length) {
                             if (finalCallbackId != -1) {
-                                callbackToJs(finalCallbackId, false, true);
+                                callbackToJs(finalCallbackId, false, false);
                             }
                         } else {
                             if (finalCallbackId != -1) {
-                                callbackToJs(finalCallbackId, false, false);
+                                callbackToJs(finalCallbackId, false, true);
                             }
                         }
                     } catch (IOException e) {
                         BDebug.e("Failed to copy asset file: ", srcFileRealPath, e);
 
                         if (finalCallbackId != -1) {
-                            callbackToJs(finalCallbackId, false, false);
+                            callbackToJs(finalCallbackId, false, true);
                         }
                     }
                 } else {
@@ -1748,17 +1748,17 @@ public class EUExFileMgr extends EUExBase {
                         File copied = new File(objRealPath + temp.getName());
                         if (copied.exists() && copied.length() == temp.length()) {
                             if (finalCallbackId != -1) {
-                                callbackToJs(finalCallbackId, false, true);
+                                callbackToJs(finalCallbackId, false, false);
                             }
                         } else {
                             if (finalCallbackId != -1) {
-                                callbackToJs(finalCallbackId, false, false);
+                                callbackToJs(finalCallbackId, false, true);
                             }
                         }
                     } catch (IOException e) {
                         BDebug.e("Failed to copy asset file: ", srcFileRealPath, e);
                         if (finalCallbackId != -1) {
-                            callbackToJs(finalCallbackId, false, false);
+                            callbackToJs(finalCallbackId, false, true);
                         }
                     }
                 }
