@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <uexplugins>
     <plugin
-        uexName="uexFileMgr" version="3.0.21" build="21">
-        <info>21:修正图片以Base64写入后打开失败的问题</info>
+        uexName="uexFileMgr" version="3.0.22" build="22">
+        <info>22:getFileRealPath支持获取加密文件的真实路径
+              22.1:增加获取文件哈希值的接口</info>
+        <build>21:修正图片以Base64写入后打开失败的问题</build>
         <build>20:修正部分成功失败的状态回调返回的回调数据类型错误的问题</build>
         <build>19:修正readFile接口的option参数可以为空</build>
         <build>18:修复多选文件时会导致显示选择数量不正确的问题</build>

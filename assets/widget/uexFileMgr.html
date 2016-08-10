@@ -567,6 +567,8 @@
 		    alert("opCode:"+opCode+",dataType:"+dataType+",data"+data);
 		    
 		}
+
+		uexFileMgr.cbGetFileHashValue = cbGetFileHashValue;
 	}
 
     function getFileSizeByPath(){
@@ -630,6 +632,17 @@
 		//uexFileMgr.search(JSON.stringify(data7));
 		//uexFileMgr.search(JSON.stringify(data8));
 
+	}
+	function getFileHash() {
+		var data1 = {
+			path: "res://biaoge.xls",
+			algorithm: "SHA-1"
+		};
+		uexFileMgr.getFileHashValue(JSON.stringify(data1));
+	}
+
+	function cbGetFileHashValue(opCode, dataType, data) {
+		alert("cbGetFileHashValue data "+data);
 	}
 	</script>
   </head>
@@ -733,6 +746,9 @@
 			<input class="textbox" id="objPath" type="text" value="wgt://">
             <input class="btn" type="button" value="复制文件" onclick="copyFile()">
 			<br>
+
+			<span>25.获取文件HASH值</span>
+			<input class="btn" type="button" value="获取文件HASH值" onclick="getFileHash()">
 		</div>
 	</div>
 </body>
