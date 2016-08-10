@@ -1480,13 +1480,28 @@ public class EUExFileMgr extends EUExBase {
             @Override
             public void run() {
 
-                JSONObject resultJson = searchFile(realPath, optionTemp, keywordsArrayTemp, suffixesTemp);
+                ArrayList resultFiles = searchFile(realPath, optionTemp, keywordsArrayTemp, suffixesTemp);
                 if (finalCallbackId != -1) {
-                    callbackToJs(finalCallbackId, false,  0, resultJson);
+                    callbackToJs(finalCallbackId, false,  resultFiles==null?1:0, resultFiles);
                 } else {
-                    String js = SCRIPT_HEADER + "if(" + F_CALLBACK_NAME_SEARCH + "){"
-                            + F_CALLBACK_NAME_SEARCH + "('" + resultJson.toString() + "');}";
-                    onCallback(js);
+                    try {
+                        JSONObject jsonObject=new JSONObject();
+                        JSONArray jsonArray = new JSONArray();
+                        if (resultFiles!=null) {
+                            for (int i = 0; i < resultFiles.size(); i++) {
+                                jsonArray.put(i, resultFiles.get(i)); //去掉传进来的目录
+                            }
+                        }
+                        jsonObject.put("result", jsonArray);
+                        jsonObject.put("isSuccess", resultFiles!=null);
+                        String js = SCRIPT_HEADER + "if(" + F_CALLBACK_NAME_SEARCH + "){"
+                                + F_CALLBACK_NAME_SEARCH + "('" + jsonObject.toString() + "');}";
+                        onCallback(js);
+                    }catch (JSONException exception){
+                        if (BDebug.DEBUG){
+                            exception.printStackTrace();
+                        }
+                    }
                 }
             }
         }).start();
@@ -1842,8 +1857,7 @@ public class EUExFileMgr extends EUExBase {
     }
 
 
-    public JSONObject searchFile(String path, int option, JSONArray keywords, JSONArray suffixes) {
-        JSONObject jsonObject = new JSONObject();
+    public ArrayList<String> searchFile(String path, int option, JSONArray keywords, JSONArray suffixes) {
         try {
             ArrayList<String> fileList = new ArrayList<String>();
             //如果前端路径写的是 res://转换后 路径为widget/wgtRes/ ,如果不把最后一个/去掉，会导致getAssets().list(path)在有文件的情况下返回为空
@@ -1867,15 +1881,13 @@ public class EUExFileMgr extends EUExBase {
                     //此时，keywords不能为空
                     if (keywords == null || keywords.length() == 0) {
                         Toast.makeText(m_context, finder.getString("plugin_fileMgr_need_keywords"), Toast.LENGTH_SHORT).show();
-                        jsonObject.put("isSuccess", false);
-                        return jsonObject;
+                        return null;
                     }
                     getFilesInCurrentDir(path, fileList, suffixes, keywords, true, false);
                     break;
                 case 3: //精确匹配，同时包含文件夹
                     if (keywords == null || keywords.length() == 0) {
-                        jsonObject.put("isSuccess", false);
-                        return jsonObject;
+                        return null;
                     }
                     getFilesInCurrentDir(path, fileList, suffixes, keywords, true, true);
                     break;
@@ -1887,37 +1899,27 @@ public class EUExFileMgr extends EUExBase {
                     break;
                 case 6://递归搜索，返回结果包含文件，且精确匹配
                     if (keywords == null || keywords.length() == 0) {
-                        jsonObject.put("isSuccess", false);
-                        return jsonObject;
+                        return null;
                     }
                     getAllFiles(path, fileList, suffixes, keywords, true, true);
                     break;
                 case 7: //递归搜索，返回结果包含文件，文件夹，且精确匹配
                     if (keywords == null || keywords.length() == 0) {
-                        jsonObject.put("isSuccess", false);
-                        return jsonObject;
+                        return null;
                     }
                     getAllFiles(path, fileList, suffixes, keywords, true, true);
                     break;
             }
-            JSONArray jsonArray = new JSONArray();
             for (int i = 0; i < fileList.size(); i++) {
-                jsonArray.put(i, fileList.get(i).replace(rootPath + "/", "")); //去掉传进来的目录
+                fileList.set(i,fileList.get(i).replace(rootPath + "/", "")); //去掉传进来的目录
             }
-            jsonObject.put("result", jsonArray);
-            jsonObject.put("isSuccess", true);
-            return jsonObject;
+            return fileList;
         } catch (IOException e) {
             e.printStackTrace();
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        try {
-            jsonObject.put("isSuccess", false);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return jsonObject;
+        return null;
     }
 
     public void getFilesInCurrentDir(String path, ArrayList<String> fileList, JSONArray suffixes, JSONArray keywords,
