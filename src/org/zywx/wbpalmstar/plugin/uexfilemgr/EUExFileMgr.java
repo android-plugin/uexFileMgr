@@ -861,7 +861,7 @@ public class EUExFileMgr extends EUExBase {
                 public void run() {
                     boolean result = object.write(inData, Integer.parseInt(inMode));
                     if(finalCallbackId !=-1 ){
-                        callbackToJs(finalCallbackId,false,result);
+                        callbackToJs(finalCallbackId,false, 0, result);
                     }else{
                         if (result) {
                             jsCallback(F_CALLBACK_NAME_WRITEFILE, inOpCode,
@@ -877,7 +877,7 @@ public class EUExFileMgr extends EUExBase {
 
         } else {
             if (callbackId!=-1){
-                callbackToJs(callbackId,false,false);
+                callbackToJs(callbackId,false, 1);
             }else{
                 errorCallback(inOpCode,
                         EUExCallback.F_E_UEXFILEMGR_WRITEFILE_1,
@@ -913,7 +913,7 @@ public class EUExFileMgr extends EUExBase {
                             .parseInt(inLen), Integer.parseInt(finalModeStr));
                     String result = TextUtils.isEmpty(resString) ? "" : BUtility.transcoding(resString);
                     if (finalCallbackId !=-1){
-                        callbackToJs(finalCallbackId,false,false,result);
+                        callbackToJs(finalCallbackId,false, 1,result);
                     }else{
                         jsCallback(F_CALLBACK_NAME_READFILE, inOpCode,
                                 EUExCallback.F_C_TEXT, result);
@@ -924,7 +924,7 @@ public class EUExFileMgr extends EUExBase {
 
         } else {
             if (callbackId!=-1){
-                callbackToJs(callbackId,false,true,"");
+                callbackToJs(callbackId,false, 0,"");
             }else {
                 errorCallback(inOpCode,
                         EUExCallback.F_E_UEXFILEMGR_READFILE_1,
@@ -1073,7 +1073,7 @@ public class EUExFileMgr extends EUExBase {
             String res = object.readerPercent(Integer.parseInt(inPercent),
                     Integer.parseInt(inLen));
             if (callbackId != -1) {
-                callbackToJs(callbackId, false,false,res);
+                callbackToJs(callbackId, false, 1,res);
             } else {
                 jsCallback(F_CALLBACK_NAME_READPERCENT, inOpCode,
                         EUExCallback.F_C_TEXT, res);
@@ -1081,7 +1081,7 @@ public class EUExFileMgr extends EUExBase {
             }
         }else{
             if (callbackId != -1) {
-                callbackToJs(callbackId, false,true);
+                callbackToJs(callbackId, false, 0);
             }
         }
 
@@ -1103,12 +1103,12 @@ public class EUExFileMgr extends EUExBase {
                 jsCallback(F_CALLBACK_NAME_READNEXT, inOpCode,
                         EUExCallback.F_C_TEXT, res);
             } else {
-                callbackToJs(callbackId, false,false,res);
+                callbackToJs(callbackId, false, 1,res);
             }
 
         }else {
             if (callbackId != -1) {
-                callbackToJs(callbackId, false,true);
+                callbackToJs(callbackId, false, 0);
             }
         }
 
@@ -1130,11 +1130,11 @@ public class EUExFileMgr extends EUExBase {
                 jsCallback(F_CALLBACK_NAME_READPRE, inOpCode,
                         EUExCallback.F_C_TEXT, res);
             } else {
-                callbackToJs(callbackId, false,false, res);
+                callbackToJs(callbackId, false, 1, res);
             }
         }else{
             if (callbackId != -1) {
-                callbackToJs(callbackId, false,true);
+                callbackToJs(callbackId, false, 0);
             }
         }
 
@@ -1315,7 +1315,7 @@ public class EUExFileMgr extends EUExBase {
                     return;
                 }
                 if (mExplorerCallbackId != -1) {
-                    callbackToJs(mExplorerCallbackId, false, jobj.getString(EUExCallback.F_JK_URL));
+                    callbackToJs(mExplorerCallbackId, false, 0, jobj.getString(EUExCallback.F_JK_URL));
                 } else {
                     jsCallback(EUExFileMgr.F_CALLBACK_NAME_EXPLORER, 0,
                             EUExCallback.F_C_TEXT,
@@ -1329,7 +1329,7 @@ public class EUExFileMgr extends EUExBase {
                 List<String> paths = (List<String>) data
                         .getSerializableExtra(FilexplorerActivity.F_INTENT_KEY_RETURN_EXPLORER_PATH);
                 if (mExplorerCallbackId != -1) {
-                    callbackToJs(mExplorerCallbackId, false, DataHelper.gson.toJsonTree(paths));
+                    callbackToJs(mExplorerCallbackId, false, 0, DataHelper.gson.toJsonTree(paths));
                 } else {
                     jsCallback(EUExFileMgr.F_CALLBACK_NAME_MULTI_EXPLORER, 0,
                             EUExCallback.F_C_JSON, paths.toString());
@@ -1417,7 +1417,7 @@ public class EUExFileMgr extends EUExBase {
         } catch (JSONException e) {
         }
         if (callbackId != -1) {
-            callbackToJs(callbackId, false, resultJson);
+            callbackToJs(callbackId, false, 0, resultJson);
         } else {
             String js = SCRIPT_HEADER + "if(" + F_CALLBACK_NAME_RENAMEFILE + "){"
                     + F_CALLBACK_NAME_RENAMEFILE + "('" + resultJson.toString() + "');}";
@@ -1482,7 +1482,7 @@ public class EUExFileMgr extends EUExBase {
 
                 JSONObject resultJson = searchFile(realPath, optionTemp, keywordsArrayTemp, suffixesTemp);
                 if (finalCallbackId != -1) {
-                    callbackToJs(finalCallbackId, false, resultJson);
+                    callbackToJs(finalCallbackId, false,  0, resultJson);
                 } else {
                     String js = SCRIPT_HEADER + "if(" + F_CALLBACK_NAME_SEARCH + "){"
                             + F_CALLBACK_NAME_SEARCH + "('" + resultJson.toString() + "');}";
@@ -1716,18 +1716,18 @@ public class EUExFileMgr extends EUExBase {
                         File copied = new File(objRealPath + temp.getName());
                         if (copied.exists() && copied.length() == length) {
                             if (finalCallbackId != -1) {
-                                callbackToJs(finalCallbackId, false, false);
+                                callbackToJs(finalCallbackId, false, 1);
                             }
                         } else {
                             if (finalCallbackId != -1) {
-                                callbackToJs(finalCallbackId, false, true);
+                                callbackToJs(finalCallbackId, false, 0);
                             }
                         }
                     } catch (IOException e) {
                         BDebug.e("Failed to copy asset file: ", srcFileRealPath, e);
 
                         if (finalCallbackId != -1) {
-                            callbackToJs(finalCallbackId, false, true);
+                            callbackToJs(finalCallbackId, false, 0);
                         }
                     }
                 } else {
@@ -1748,17 +1748,17 @@ public class EUExFileMgr extends EUExBase {
                         File copied = new File(objRealPath + temp.getName());
                         if (copied.exists() && copied.length() == temp.length()) {
                             if (finalCallbackId != -1) {
-                                callbackToJs(finalCallbackId, false, false);
+                                callbackToJs(finalCallbackId, false, 1);
                             }
                         } else {
                             if (finalCallbackId != -1) {
-                                callbackToJs(finalCallbackId, false, true);
+                                callbackToJs(finalCallbackId, false, 0);
                             }
                         }
                     } catch (IOException e) {
                         BDebug.e("Failed to copy asset file: ", srcFileRealPath, e);
                         if (finalCallbackId != -1) {
-                            callbackToJs(finalCallbackId, false, true);
+                            callbackToJs(finalCallbackId, false, 0);
                         }
                     }
                 }
@@ -1812,7 +1812,7 @@ public class EUExFileMgr extends EUExBase {
         @Override
         protected void onPostExecute(ResultFileSizeVO result) {
             if (mCallbackId != -1) {
-                callbackToJs(mCallbackId, false, DataHelper.gson.toJsonTree(result));
+                callbackToJs(mCallbackId, false, 0, DataHelper.gson.toJsonTree(result));
             } else {
                 if (result != null) {
                     callBackPluginJs(JsConst.CALLBACK_GET_FILE_SIZE_BY_PATH,
