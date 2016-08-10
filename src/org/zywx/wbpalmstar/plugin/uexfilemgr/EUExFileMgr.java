@@ -1306,33 +1306,33 @@ public class EUExFileMgr extends EUExBase {
         JSONObject jobj = new JSONObject();
         try {
             if (requestCode == F_ACT_REQ_CODE_UEX_FILE_EXPLORER) {
+                String path=null;
                 if (resultCode == Activity.RESULT_OK) {
-
+                    path=data.getStringExtra(FilexplorerActivity.F_INTENT_KEY_RETURN_EXPLORER_PATH);
                     jobj.put(
-                            EUExCallback.F_JK_URL,
-                            data.getStringExtra(FilexplorerActivity.F_INTENT_KEY_RETURN_EXPLORER_PATH));
-                } else {
-                    return;
+                            EUExCallback.F_JK_URL,path
+                            );
                 }
                 if (mExplorerCallbackId != -1) {
-                    callbackToJs(mExplorerCallbackId, false, 0, jobj.getString(EUExCallback.F_JK_URL));
+                    callbackToJs(mExplorerCallbackId, false, path==null?1:0, path);
                 } else {
                     jsCallback(EUExFileMgr.F_CALLBACK_NAME_EXPLORER, 0,
                             EUExCallback.F_C_TEXT,
-                            jobj.getString(EUExCallback.F_JK_URL));
+                            path);
                 }
             } else if (requestCode == F_ACT_REQ_CODE_UEX_FILE_MULTI_EXPLORER) {
-
-                if (resultCode != Activity.RESULT_OK) {
-                    return;
+                List<String> paths=null;
+                if (resultCode == Activity.RESULT_OK) {
+                    paths = (List<String>) data
+                            .getSerializableExtra(FilexplorerActivity.F_INTENT_KEY_RETURN_EXPLORER_PATH);
                 }
-                List<String> paths = (List<String>) data
-                        .getSerializableExtra(FilexplorerActivity.F_INTENT_KEY_RETURN_EXPLORER_PATH);
                 if (mExplorerCallbackId != -1) {
-                    callbackToJs(mExplorerCallbackId, false, 0, DataHelper.gson.toJsonTree(paths));
+                    callbackToJs(mExplorerCallbackId, false, paths==null?1:0, paths==null?null:DataHelper.gson
+                            .toJsonTree
+                            (paths));
                 } else {
                     jsCallback(EUExFileMgr.F_CALLBACK_NAME_MULTI_EXPLORER, 0,
-                            EUExCallback.F_C_JSON, paths.toString());
+                            EUExCallback.F_C_JSON, paths==null?null:paths.toString());
                 }
             }
         } catch (JSONException e) {
