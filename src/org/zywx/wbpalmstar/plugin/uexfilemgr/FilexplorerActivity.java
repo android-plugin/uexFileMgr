@@ -78,14 +78,7 @@ public class FilexplorerActivity extends Activity implements OnItemClickListener
                 final File startFile = new File(startFilePath);
                 if (startFile.exists()) {
                     if (startFile.isDirectory()) {
-                        if (startFile.getAbsolutePath().contains(SDCARD_PATH)) {
-                            currentFile = startFile;
-                        } else {
-                            Toast.makeText(this,
-                                    finder.getString("plugin_file_input_path_is_not_valid_path_redirect_to_sdcard"),
-                                    Toast.LENGTH_LONG).show();
-                            currentFile = new File(sdPath);
-                        }
+                        currentFile = startFile;
                     } else {
                         Toast.makeText(this,
                                 finder.getString("plugin_file_input_path_is_not_valid_path_redirect_to_sdcard"),
