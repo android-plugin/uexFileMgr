@@ -250,7 +250,13 @@ public class FilexplorerActivity extends Activity implements OnItemClickListener
                 } else {// 点选模式
                     BDebug.i(TAG, "Explorer Return Path:" + clickedFile.getAbsolutePath());
                     final Intent intent = new Intent(getIntent().getAction());
-                    intent.putExtra(F_INTENT_KEY_RETURN_EXPLORER_PATH, clickedFile.getAbsolutePath());
+                    if (canMultiSelected){
+                        ArrayList<String> paths=new ArrayList<String>();
+                        paths.add(clickedFile.getAbsolutePath());
+                        intent.putStringArrayListExtra(F_INTENT_KEY_RETURN_EXPLORER_PATH, paths);
+                    }else{
+                        intent.putExtra(F_INTENT_KEY_RETURN_EXPLORER_PATH, clickedFile.getAbsolutePath());
+                    }
                     setResult(RESULT_OK, intent);
                     finish();
                 }
