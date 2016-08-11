@@ -676,7 +676,7 @@ public class EUExFileMgr extends EUExBase {
                                 F_ACT_REQ_CODE_UEX_FILE_EXPLORER);
                     } else {
                         if (mExplorerCallbackId != -1) {
-                            callbackToJs(mExplorerCallbackId, false);
+                            callbackToJs(mExplorerCallbackId, false,1);
                         } else {
                             errorCallback(0,
                                     EUExCallback.F_E_UEXFILEMGR_EXPLORER_2,
@@ -685,7 +685,7 @@ public class EUExFileMgr extends EUExBase {
                     }
                 } else {
                     if (mExplorerCallbackId != -1) {
-                        callbackToJs(mExplorerCallbackId, false);
+                        callbackToJs(mExplorerCallbackId, false,1);
                     } else {
                         errorCallback(0, EUExCallback.F_E_UEXFILEMGR_EXPLORER_2,
                                 finder.getString("error_parameter"));
@@ -693,7 +693,7 @@ public class EUExFileMgr extends EUExBase {
                 }
             } else {
                 if (mExplorerCallbackId != -1) {
-                    callbackToJs(mExplorerCallbackId, false);
+                    callbackToJs(mExplorerCallbackId, false,1);
                 } else {
                     errorCallback(0, EUExCallback.F_E_UEXFILEMGR_EXPLORER_6,
                             finder.getString("error_sdcard_is_not_available"));
@@ -745,7 +745,7 @@ public class EUExFileMgr extends EUExBase {
                                 F_ACT_REQ_CODE_UEX_FILE_MULTI_EXPLORER);
                     } else {
                         if (mExplorerCallbackId != -1) {
-                            callbackToJs(mExplorerCallbackId, false);
+                            callbackToJs(mExplorerCallbackId, false,1);
                         } else {
                             errorCallback(0,
                                     EUExCallback.F_E_UEXFILEMGR_EXPLORER_2,
@@ -754,7 +754,7 @@ public class EUExFileMgr extends EUExBase {
                     }
                 } else {
                     if (mExplorerCallbackId != -1) {
-                        callbackToJs(mExplorerCallbackId, false);
+                        callbackToJs(mExplorerCallbackId, false,1);
                     } else {
                         errorCallback(0, EUExCallback.F_E_UEXFILEMGR_EXPLORER_2,
                                 finder.getString("error_parameter"));
@@ -763,7 +763,7 @@ public class EUExFileMgr extends EUExBase {
                 }
             } else {
                 if (mExplorerCallbackId != -1) {
-                    callbackToJs(mExplorerCallbackId, false);
+                    callbackToJs(mExplorerCallbackId, false,1);
                 } else {
                     errorCallback(0, EUExCallback.F_E_UEXFILEMGR_EXPLORER_6,
                             finder.getString("error_sdcard_is_not_available"));
@@ -861,7 +861,7 @@ public class EUExFileMgr extends EUExBase {
                 public void run() {
                     boolean result = object.write(inData, Integer.parseInt(inMode));
                     if(finalCallbackId !=-1 ){
-                        callbackToJs(finalCallbackId,false, 0, result);
+                        callbackToJs(finalCallbackId,false, result?0:1);
                     }else{
                         if (result) {
                             jsCallback(F_CALLBACK_NAME_WRITEFILE, inOpCode,
@@ -913,7 +913,7 @@ public class EUExFileMgr extends EUExBase {
                             .parseInt(inLen), Integer.parseInt(finalModeStr));
                     String result = TextUtils.isEmpty(resString) ? "" : BUtility.transcoding(resString);
                     if (finalCallbackId !=-1){
-                        callbackToJs(finalCallbackId,false, 1,result);
+                        callbackToJs(finalCallbackId,false, 0,result);
                     }else{
                         jsCallback(F_CALLBACK_NAME_READFILE, inOpCode,
                                 EUExCallback.F_C_TEXT, result);
@@ -924,7 +924,7 @@ public class EUExFileMgr extends EUExBase {
 
         } else {
             if (callbackId!=-1){
-                callbackToJs(callbackId,false, 0,"");
+                callbackToJs(callbackId,false, 1,"");
             }else {
                 errorCallback(inOpCode,
                         EUExCallback.F_E_UEXFILEMGR_READFILE_1,
@@ -1073,7 +1073,7 @@ public class EUExFileMgr extends EUExBase {
             String res = object.readerPercent(Integer.parseInt(inPercent),
                     Integer.parseInt(inLen));
             if (callbackId != -1) {
-                callbackToJs(callbackId, false, 1,res);
+                callbackToJs(callbackId, false, 0,res);
             } else {
                 jsCallback(F_CALLBACK_NAME_READPERCENT, inOpCode,
                         EUExCallback.F_C_TEXT, res);
@@ -1081,7 +1081,7 @@ public class EUExFileMgr extends EUExBase {
             }
         }else{
             if (callbackId != -1) {
-                callbackToJs(callbackId, false, 0);
+                callbackToJs(callbackId, false, 1);
             }
         }
 
@@ -1103,12 +1103,12 @@ public class EUExFileMgr extends EUExBase {
                 jsCallback(F_CALLBACK_NAME_READNEXT, inOpCode,
                         EUExCallback.F_C_TEXT, res);
             } else {
-                callbackToJs(callbackId, false, 1,res);
+                callbackToJs(callbackId, false, 0,res);
             }
 
         }else {
             if (callbackId != -1) {
-                callbackToJs(callbackId, false, 0);
+                callbackToJs(callbackId, false, 1);
             }
         }
 
@@ -1130,11 +1130,11 @@ public class EUExFileMgr extends EUExBase {
                 jsCallback(F_CALLBACK_NAME_READPRE, inOpCode,
                         EUExCallback.F_C_TEXT, res);
             } else {
-                callbackToJs(callbackId, false, 1, res);
+                callbackToJs(callbackId, false, 0, res);
             }
         }else{
             if (callbackId != -1) {
-                callbackToJs(callbackId, false, 0);
+                callbackToJs(callbackId, false, 1);
             }
         }
 
@@ -1417,7 +1417,7 @@ public class EUExFileMgr extends EUExBase {
         } catch (JSONException e) {
         }
         if (callbackId != -1) {
-            callbackToJs(callbackId, false, 0, resultJson);
+            callbackToJs(callbackId, false, result.equals("1")?0:1, resultJson);
         } else {
             String js = SCRIPT_HEADER + "if(" + F_CALLBACK_NAME_RENAMEFILE + "){"
                     + F_CALLBACK_NAME_RENAMEFILE + "('" + resultJson.toString() + "');}";
@@ -1601,14 +1601,14 @@ public class EUExFileMgr extends EUExBase {
                         File copied = new File(objRealPath + temp.getName());
                         if (copied.exists() && copied.length() == length) {
                             if (finalCallbackId != -1) {
-                                callbackToJs(finalCallbackId, false, true);
+                                callbackToJs(finalCallbackId, false, 0);
                             } else {
                                 jsCallback(F_CALLBACK_NAME_COPYFILE, inOpCode,
                                         EUExCallback.F_C_INT, EUExCallback.F_C_SUCCESS);
                             }
                         } else {
                             if (finalCallbackId != -1) {
-                                callbackToJs(finalCallbackId, false, false);
+                                callbackToJs(finalCallbackId, false, 1);
                             } else {
                                 jsCallback(F_CALLBACK_NAME_COPYFILE, inOpCode,
                                         EUExCallback.F_C_INT, EUExCallback.F_C_FAILED);
@@ -1618,7 +1618,7 @@ public class EUExFileMgr extends EUExBase {
                         BDebug.e("Failed to copy asset file: ", srcFileRealPath, e);
 
                         if (finalCallbackId != -1) {
-                            callbackToJs(finalCallbackId, false, false);
+                            callbackToJs(finalCallbackId, false, 1);
                         } else {
                             jsCallback(F_CALLBACK_NAME_COPYFILE, inOpCode,
                                     EUExCallback.F_C_INT, EUExCallback.F_C_FAILED);
@@ -1650,14 +1650,14 @@ public class EUExFileMgr extends EUExBase {
                         File copied = new File(objRealPath + temp.getName());
                         if (copied.exists() && copied.length() == temp.length()) {
                             if (finalCallbackId != -1) {
-                                callbackToJs(finalCallbackId, false, true);
+                                callbackToJs(finalCallbackId, false, 0);
                             } else {
                                 jsCallback(F_CALLBACK_NAME_COPYFILE, inOpCode,
                                         EUExCallback.F_C_INT, EUExCallback.F_C_SUCCESS);
                             }
                         } else {
                             if (finalCallbackId != -1) {
-                                callbackToJs(finalCallbackId, false, false);
+                                callbackToJs(finalCallbackId, false, 1);
                             } else {
                                 jsCallback(F_CALLBACK_NAME_COPYFILE, inOpCode,
                                         EUExCallback.F_C_INT, EUExCallback.F_C_FAILED);
@@ -1666,7 +1666,7 @@ public class EUExFileMgr extends EUExBase {
                     } catch (IOException e) {
                         BDebug.e("Failed to copy asset file: ", srcFileRealPath, e);
                         if (finalCallbackId != -1) {
-                            callbackToJs(finalCallbackId, false, false);
+                            callbackToJs(finalCallbackId, false, 1);
                         } else {
                             jsCallback(F_CALLBACK_NAME_COPYFILE, inOpCode,
                                     EUExCallback.F_C_INT, EUExCallback.F_C_FAILED);
@@ -1731,18 +1731,18 @@ public class EUExFileMgr extends EUExBase {
                         File copied = new File(objRealPath + temp.getName());
                         if (copied.exists() && copied.length() == length) {
                             if (finalCallbackId != -1) {
-                                callbackToJs(finalCallbackId, false, 1);
+                                callbackToJs(finalCallbackId, false, 0);
                             }
                         } else {
                             if (finalCallbackId != -1) {
-                                callbackToJs(finalCallbackId, false, 0);
+                                callbackToJs(finalCallbackId, false, 1);
                             }
                         }
                     } catch (IOException e) {
                         BDebug.e("Failed to copy asset file: ", srcFileRealPath, e);
 
                         if (finalCallbackId != -1) {
-                            callbackToJs(finalCallbackId, false, 0);
+                            callbackToJs(finalCallbackId, false, 1);
                         }
                     }
                 } else {
@@ -1763,17 +1763,17 @@ public class EUExFileMgr extends EUExBase {
                         File copied = new File(objRealPath + temp.getName());
                         if (copied.exists() && copied.length() == temp.length()) {
                             if (finalCallbackId != -1) {
-                                callbackToJs(finalCallbackId, false, 1);
+                                callbackToJs(finalCallbackId, false, 0);
                             }
                         } else {
                             if (finalCallbackId != -1) {
-                                callbackToJs(finalCallbackId, false, 0);
+                                callbackToJs(finalCallbackId, false, 1);
                             }
                         }
                     } catch (IOException e) {
                         BDebug.e("Failed to copy asset file: ", srcFileRealPath, e);
                         if (finalCallbackId != -1) {
-                            callbackToJs(finalCallbackId, false, 0);
+                            callbackToJs(finalCallbackId, false, 1);
                         }
                     }
                 }
