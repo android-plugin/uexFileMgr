@@ -254,6 +254,25 @@ public class EUExFile {
 
     }
 
+    private void initInputStream(){
+        if (m_inputStream==null){
+            try {
+                BDebug.i("appcan", "m_inputStream is null...");
+                if (m_inPath.startsWith("/")) {
+                    File readFile = new File(m_inPath);
+                    if (!readFile.exists()) {
+                        m_errorType = F_ERROR_FILE_NOT_EXIST;
+                    }
+                    m_inputStream = new FileInputStream(readFile);
+                } else {
+                    m_inputStream = m_eContext.getAssets().open(m_inPath);
+                }
+            }catch (Exception exception){
+
+            }
+        }
+    }
+
     /**
      * 读文件
      *
@@ -268,19 +287,7 @@ public class EUExFile {
             buffer = new byte[newLen];
         }
         try {
-            if (m_inputStream==null){
-                BDebug.i("appcan", "m_inputStream is null...");
-                if (m_inPath.startsWith("/")) {
-                    File readFile = new File(m_inPath);
-                    if (!readFile.exists()) {
-                        m_errorType = F_ERROR_FILE_NOT_EXIST;
-                        return null;
-                    }
-                    m_inputStream = new FileInputStream(readFile);
-                } else {
-                    m_inputStream = m_eContext.getAssets().open(m_inPath);
-                }
-            }
+            initInputStream();
             if (m_inputStream != null) {
 
                 if (newLen == -1) {
@@ -314,6 +321,7 @@ public class EUExFile {
      */
     protected long getSize() {
         try {
+            initInputStream();
             if (m_inputStream != null) {
                 return m_inputStream.available();
             }
