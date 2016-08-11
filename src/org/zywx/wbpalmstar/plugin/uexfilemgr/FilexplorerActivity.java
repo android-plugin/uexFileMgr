@@ -323,6 +323,10 @@ public class FilexplorerActivity extends Activity implements OnItemClickListener
         @Override
         protected void onPostExecute(Object result) {
             if (result == null) {
+                if (historyPostionStack.isEmpty()){
+                    finish();
+                    return;
+                }
                 historyPostionStack.pop();
                 Toast.makeText(FilexplorerActivity.this, finder.getString("plugin_file_can_not_open_this_folder"),
                         Toast.LENGTH_SHORT).show();
