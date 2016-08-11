@@ -1482,7 +1482,8 @@ public class EUExFileMgr extends EUExBase {
 
                 ArrayList resultFiles = searchFile(realPath, optionTemp, keywordsArrayTemp, suffixesTemp);
                 if (finalCallbackId != -1) {
-                    callbackToJs(finalCallbackId, false,  resultFiles==null?1:0, resultFiles);
+                    callbackToJs(finalCallbackId, false,  resultFiles==null?1:0, DataHelper.gson.toJsonTree
+                            (resultFiles));
                 } else {
                     try {
                         JSONObject jsonObject=new JSONObject();
