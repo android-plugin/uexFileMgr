@@ -934,7 +934,7 @@ public class EUExFileMgr extends EUExBase {
         }
     }
 
-    public String getFileSize(String[] parm) {
+    public long getFileSize(String[] parm) {
         String inOpCode = parm[0];
 //		if (!BUtility.isNumeric(inOpCode)) {
 //			return;
@@ -944,13 +944,13 @@ public class EUExFileMgr extends EUExBase {
             long res = object.getSize();
             jsCallback(F_CALLBACK_NAME_GETFILESIZE, inOpCode,
                     EUExCallback.F_C_INT, Integer.parseInt(String.valueOf(res)));
-            return String.valueOf(res);
+            return res;
         } else {
             errorCallback(inOpCode,
                     EUExCallback.F_E_UEXFILEMGR_GETFILESIZE_1,
                     ResoureFinder.getInstance().getString(mContext,
                             "error_parameter"));
-            return null;
+            return -1;
         }
     }
 
@@ -1039,7 +1039,7 @@ public class EUExFileMgr extends EUExBase {
 
     }
 
-    public String getReaderOffset(String[] parm) {
+    public long getReaderOffset(String[] parm) {
         String inOpCode = parm[0];
 //		if (!BUtility.isNumeric(inOpCode)) {
 //			return;
@@ -1051,13 +1051,13 @@ public class EUExFileMgr extends EUExBase {
             jsCallback(F_CALLBACK_NAME_GETREADEROFFSET,
                     inOpCode, EUExCallback.F_C_INT,
                     Integer.parseInt(String.valueOf(res)));
-            return String.valueOf(res);
+            return res;
         } else {
             errorCallback(inOpCode,
                     EUExCallback.F_E_UEXFILEMGR_GETREADEROFFSET_1,
                     ResoureFinder.getInstance().getString(mContext,
                             "error_parameter"));
-            return null;
+            return -1;
         }
 
     }
@@ -1815,7 +1815,7 @@ public class EUExFileMgr extends EUExBase {
                         size = FileUtility.getFileSize(file);
                     }
                     result.setErrorCode(JsConst.RESULT_FILE_SIZE_SUCCESS);
-                    result.setData(String.valueOf(FileUtility.formetFileSize(size, unit)));
+                    result.setData(FileUtility.formetFileSize(size, unit));
                     result.setUnit(unit);
                 } catch (Exception e) {
                     e.printStackTrace();

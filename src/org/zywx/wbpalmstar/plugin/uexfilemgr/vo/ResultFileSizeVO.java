@@ -6,7 +6,7 @@ public class ResultFileSizeVO implements Serializable{
     private static final long serialVersionUID = -4849172627309933109L;
     private String id;
     private int errorCode;
-    private String data;
+    private double data;
     private String unit;
 
     public String getId() {
@@ -25,11 +25,11 @@ public class ResultFileSizeVO implements Serializable{
         this.errorCode = errorCode;
     }
 
-    public String getData() {
+    public double getData() {
         return data;
     }
 
-    public void setData(String data) {
+    public void setData(double data) {
         this.data = data;
     }
 
