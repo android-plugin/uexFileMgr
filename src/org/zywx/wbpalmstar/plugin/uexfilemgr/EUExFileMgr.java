@@ -1828,7 +1828,7 @@ public class EUExFileMgr extends EUExBase {
         @Override
         protected void onPostExecute(ResultFileSizeVO result) {
             if (mCallbackId != -1) {
-                callbackToJs(mCallbackId, false, 0, DataHelper.gson.toJsonTree(result));
+                callbackToJs(mCallbackId, false, result.getErrorCode(), DataHelper.gson.toJsonTree(result));
             } else {
                 if (result != null) {
                     callBackPluginJs(JsConst.CALLBACK_GET_FILE_SIZE_BY_PATH,
