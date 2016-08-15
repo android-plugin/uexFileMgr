@@ -41,5 +41,6 @@
         <method name="createWithPassword"/>
         <method name="openWithPassword"/>
         <method name="open"/>
+        <method name="getFileHashValue" />
     </plugin>
 </uexplugins>
