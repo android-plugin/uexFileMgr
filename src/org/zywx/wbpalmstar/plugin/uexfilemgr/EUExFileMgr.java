@@ -3,9 +3,12 @@ package org.zywx.wbpalmstar.plugin.uexfilemgr;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.AssetManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
@@ -39,6 +42,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.channels.FileChannel;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -75,6 +79,7 @@ public class EUExFileMgr extends EUExBase {
     private static final String F_CALLBACK_NAME_DELETEFILEBYID = "uexFileMgr.cbDeleteFileByID";
     private static final String F_CALLBACK_NAME_SEARCH = "uexFileMgr.cbSearch";
     private static final String F_CALLBACK_NAME_COPYFILE = "uexFileMgr.cbCopyFile";
+    private static final String F_CALLBACK_NAME_GETFILEHASHVALUE = "uexFileMgr.cbGetFileHashValue";
 
     public static final int F_FILE_OPEN_MODE_READ = 0x1;
     public static final int F_FILE_OPEN_MODE_WRITE = 0x2;
@@ -979,30 +984,44 @@ public class EUExFileMgr extends EUExBase {
     public String getFileRealPath(String[] parm) {
         boolean flag = false;
         String inPath = parm[0];
-        if (inPath.startsWith("res://")) {
-            flag = true;
-        }
-        String m_indexUrl = mBrwView.getCurrentWidget().m_indexUrl;
-        String boxPathString = BUtility.makeRealPath("box://",
-                mBrwView.getCurrentWidget().m_widgetPath,
-                mBrwView.getCurrentWidget().m_wgtType);
-        if (m_indexUrl.contains("widget/plugin/")) {
-            String widgetPaTh = "";
-            if (checkAppStatus(mContext, mBrwView.getRootWidget().m_appId))
-                widgetPaTh = (boxPathString + "widget/plugin/"
-                        + mBrwView.getCurrentWidget().m_appId + File.separator);
-            else {
-                widgetPaTh = ("file:///android_asset/widget/plugin/"
-                        + mBrwView.getCurrentWidget().m_appId + File.separator);
+        String contentPrefix = "content://" + m_context.getPackageName() + ".sp/";
+        if (inPath.startsWith(contentPrefix)) {  // widget加密了的文件路径
+            String subString = contentPrefix + "android_asset";
+            inPath = inPath.substring(subString.length());
+            String sdCardPath = Environment.getExternalStorageDirectory().getAbsolutePath();
+            String sboxPath = m_context.getFilesDir().getAbsolutePath();
+            if ((!TextUtils.isEmpty(sdCardPath) && inPath.startsWith(sdCardPath))
+                    || (!TextUtils.isEmpty(sboxPath) && inPath.startsWith(sboxPath))) {
+                inPath = "file://" + inPath ;
+            } else {
+                inPath = "file:///android_asset" + inPath ;
             }
-            inPath = BUtility.makeRealPath(
-                    BUtility.makeUrl(mBrwView.getCurrentUrl(), inPath),
-                    widgetPaTh, mBrwView.getCurrentWidget().m_wgtType);
         } else {
-            inPath = BUtility.makeRealPath(
-                    BUtility.makeUrl(mBrwView.getCurrentUrl(), inPath),
+            if (inPath.startsWith("res://")) {
+                flag = true;
+            }
+            String m_indexUrl = mBrwView.getCurrentWidget().m_indexUrl;
+            String boxPathString = BUtility.makeRealPath("box://",
                     mBrwView.getCurrentWidget().m_widgetPath,
                     mBrwView.getCurrentWidget().m_wgtType);
+            if (m_indexUrl.contains("widget/plugin/")) {
+                String widgetPaTh = "";
+                if (checkAppStatus(mContext, mBrwView.getRootWidget().m_appId))
+                    widgetPaTh = (boxPathString + "widget/plugin/"
+                            + mBrwView.getCurrentWidget().m_appId + File.separator);
+                else {
+                    widgetPaTh = ("file:///android_asset/widget/plugin/"
+                            + mBrwView.getCurrentWidget().m_appId + File.separator);
+                }
+                inPath = BUtility.makeRealPath(
+                        BUtility.makeUrl(mBrwView.getCurrentUrl(), inPath),
+                        widgetPaTh, mBrwView.getCurrentWidget().m_wgtType);
+            } else {
+                inPath = BUtility.makeRealPath(
+                        BUtility.makeUrl(mBrwView.getCurrentUrl(), inPath),
+                        mBrwView.getCurrentWidget().m_widgetPath,
+                        mBrwView.getCurrentWidget().m_wgtType);
+            }
         }
         if (flag && inPath != null
                 && inPath.startsWith(BUtility.F_Widget_RES_path)) {
@@ -2153,5 +2172,59 @@ public class EUExFileMgr extends EUExBase {
         onCallback(js);
     }
 
+    public void getFileHashValue(String[] params) {
+        if (params.length < 1) {
+            return;
+        }
 
+        int callbackId = -1;
+        if (params.length > 1) {
+            callbackId = Integer.parseInt(params[1]);
+        }
+        final String json = params[0];
+        final int finalCallbackId = callbackId;
+        new Handler().post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    JSONObject jsonObject = new JSONObject(json);
+                    String path = jsonObject.getString("path");
+                    String algorithm = jsonObject.getString("algorithm");
+                    String realPath = BUtility.makeRealPath(path, mBrwView);
+
+                    InputStream fis;
+                    if (realPath.startsWith(BUtility.F_Widget_RES_path)) {
+                        AssetManager am = m_context.getAssets();
+                        fis = am.open(realPath);
+                    } else {
+                        fis = new FileInputStream(realPath);
+                    }
+
+                    byte[] buffer = new byte[1024];
+                    MessageDigest complete = MessageDigest.getInstance(algorithm);
+                    int numRead;
+                    do {
+                        numRead = fis.read(buffer);
+                        if (numRead > 0) {
+                            complete.update(buffer, 0, numRead);
+                        }
+                    } while (numRead != -1);
+                    fis.close();
+
+                    byte[] b = complete.digest();
+                    String result = "";
+                    for (int i = 0; i < b.length; i++) {
+                        result += Integer.toString((b[i] & 0xff) + 0x100, 16).substring(1);
+                    }
+                    if (finalCallbackId != -1) {
+                        callbackToJs(finalCallbackId, false, result);
+                    } else {
+                        jsCallback(F_CALLBACK_NAME_GETFILEHASHVALUE, 0, EUExCallback.F_C_TEXT, result);
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
 }

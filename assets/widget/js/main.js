@@ -535,7 +535,20 @@ window.uexOnload = function() {
 		alert("opCode:" + opCode + ",dataType:" + dataType + ",data" + data);
 
 	};
+	uexFileMgr.cbGetFileHashValue = function(opCode, dataType, data) {
+		alert("cbGetFileHashValue data "+data);
+	};
 };
+
+function getFileHash() {
+	var data1 = {
+		path: "res://biaoge.xls",
+		algorithm: "SHA-1"
+	};
+	uexFileMgr.getFileHashValue(JSON.stringify(data1), function(data) {
+		alert(data);
+	});
+}
 
 function getFileSizeByPath() {
 	var path = document.getElementById("fileSize_id").value;
