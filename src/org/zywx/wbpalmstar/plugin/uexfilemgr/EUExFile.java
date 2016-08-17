@@ -66,6 +66,7 @@ public class EUExFile {
                         | EUExFileMgr.F_FILE_OPEN_MODE_READ:
                 case EUExFileMgr.F_FILE_OPEN_MODE_READ
                         | EUExFileMgr.F_FILE_OPEN_MODE_WRITE:
+                case 7:
                     File file = new File(inPath);
                     if (m_fileType == EUExFileMgr.F_TYPE_DIR) {
                         if (!file.exists()) {
