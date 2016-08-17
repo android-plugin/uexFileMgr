@@ -1479,6 +1479,9 @@ public class EUExFileMgr extends EUExBase {
         if (jsonObject.has("option")) {
             option = jsonObject.getInt("option");
         }
+        if (jsonObject.has("flag")){
+            option=jsonObject.getInt("flag");
+        }
         if (jsonObject.has("keywords")) {
             keywordsArray = jsonObject.getJSONArray("keywords");
         }
