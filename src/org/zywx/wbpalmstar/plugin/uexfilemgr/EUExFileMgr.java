@@ -781,9 +781,9 @@ public class EUExFileMgr extends EUExBase {
         }
     }
 
-    public boolean seekFile(String[] parm) {
+    public long seekFile(String[] parm) {
         if (parm.length != 2) {
-            return false;
+            return -1;
         }
         String inOpCode = parm[0], inPos = parm[1];
 //		if (!BUtility.isNumeric(inOpCode)) {
@@ -792,20 +792,20 @@ public class EUExFileMgr extends EUExBase {
         EUExFile object = objectMap.get(inOpCode);
         if (object != null) {
             if (object.seek(inPos)) {
-                return true;
+                return object.getreaderOffset();
             } else {
                 errorCallback(inOpCode,
                         EUExCallback.F_E_UEXFILEMGR_SEEKFILE_1,
                         ResoureFinder.getInstance().getString(mContext,
                                 "error_parameter"));
-                return false;
+                return -1;
             }
         } else {
-            return false;
+            return -1;
         }
     }
 
-    public boolean seekBeginOfFile(String[] parm) {
+    public long seekBeginOfFile(String[] parm) {
 
         String inOpCode = parm[0];
 //		if (!BUtility.isNumeric(inOpCode)) {
@@ -814,20 +814,20 @@ public class EUExFileMgr extends EUExBase {
         EUExFile object = objectMap.get(inOpCode);
         if (object != null) {
             if (object.seekBegin()) {
-                return true;
+                return object.getreaderOffset();
             } else {
                 errorCallback(inOpCode,
                         EUExCallback.F_E_UEXFILEMGR_SEEKBEGINOFFILE_1,
                         ResoureFinder.getInstance().getString(mContext,
                                 "error_parameter"));
-                return false;
+                return -1;
             }
 
         }
-        return false;
+        return -1;
     }
 
-    public boolean seekEndOfFile(String[] parm) {
+    public long seekEndOfFile(String[] parm) {
 
         String inOpCode = parm[0];
 //		if (!BUtility.isNumeric(inOpCode)) {
@@ -836,17 +836,17 @@ public class EUExFileMgr extends EUExBase {
         EUExFile object = objectMap.get(inOpCode);
         if (object != null) {
             if (object.seekEnd()) {
-                return true;
+                return object.getreaderOffset();
             } else {
                 errorCallback(inOpCode,
                         EUExCallback.F_E_UEXFILEMGR_SEEKENDOFFILE_1,
                         ResoureFinder.getInstance().getString(mContext,
                                 "error_parameter"));
-                return false;
+                return -1;
             }
 
         }
-        return false;
+        return -1;
     }
 
     public void writeFile(String[] parm) {
