@@ -74,12 +74,13 @@ var UNIT_TEST = {
                     return;
                 }
                 self.testcase = self.units.shift();
-                var out = $("<div style='color:blue'> " + self.testcase.name + self.testcase.item + ":START CASE </div>");
+                var out = $("<div style='color:blue'> " + self.testcase.name +" "+ self.testcase.item + ":START CASE </div>");
                 self.dom.append(out);
                 self.testcase.run();
             } catch(e) {
                 var out = $("<div style='color:red'>" + self.testcase.name + self.testcase.item + ":" + e.message + "</div>");
                 self.dom.append(out);
+                UNIT_TEST.assert(false);
             }
         });
         this.trigger("_NEXTCASE", "");

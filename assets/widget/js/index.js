@@ -4,8 +4,9 @@
     });
     appcan.button("#nav-right", "btn-act", function() {
     });
-    appcan.button("#Button_DgxEcP", "btn-act", function() {
-        //uexWindow.open('case11', '0', "case/unittest.html", 0, '', '', 0, 500);
-        appcan.window.open("case", "case/unittest.html", 1);
-    })
-})($); 
+
+})($);
+
+function openTestCase(plugin){
+    appcan.window.open("case", "case/unittest.html?"+plugin, 1);
+}

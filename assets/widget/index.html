@@ -14,6 +14,8 @@
         <link rel="stylesheet" href="css/appcan.control.css">
         <link rel="stylesheet" href="./css/index.css">
         <script src="js/eruda.min.js"></script>
+        <script src="./js/index.js">
+        </script>
     </head>
     
     <body class="" ontouchstart>
@@ -31,11 +33,17 @@
                     </div>
                 </div>
             </div>
-            <div class="" data-control="BOX" id="Box_VFnaLm">
+            <div class="" data-control="BOX">
+                <div class="button ub ub-ac bc-text-head ub-pc bc-btn" id="Button_DgxEcP" onclick="openTestCase('uexFileMgr')">uexFileMgr</div>
             </div>
-            <div class="" data-control="BOX" id="Box_bbg1R2">
-                <div class="button ub ub-ac bc-text-head ub-pc bc-btn" id="Button_DgxEcP">确定</div>
+            <div class="" data-control="BOX">
+                <div class="button ub ub-ac bc-text-head ub-pc bc-btn" id="uexXmlHttpMgr" onclick='openTestCase("uexXMLHttpMgr")'>uexXmlHttpMgr</div>
             </div>
+            <div class="button ub ub-ac bc-text-head ub-pc bc-btn" id="uexUploaderMgr" onclick='openTestCase("uexUploaderMgr")'>uexUploaderMgr</div>
+            <div class="button ub ub-ac bc-text-head ub-pc bc-btn" id="uexDatabaseMgr" onclick='openTestCase("uexDatabaseMgr")'>uexDatabaseMgr</div>
+            <div class="button ub ub-ac bc-text-head ub-pc bc-btn" id="uexDownloaderMgr" onclick='openTestCase("uexDownloaderMgr")'>uexDownloaderMgr</div>
+            <div class="button ub ub-ac bc-text-head ub-pc bc-btn" id="uexDevice" onclick='openTestCase("uexDevice")'>uexDevice</div>
+            <div class="button ub ub-ac bc-text-head ub-pc bc-btn" id="uexSocketMgr" onclick='openTestCase("uexSocketMgr")'>uexSocketMgr</div>
         </div>
         <script src="js/appcan.js">
         </script>
@@ -47,8 +55,7 @@
         </script>
         <script src="./assets/mvvm/index.js">
         </script>
-        <script src="./js/index.js">
-        </script>
+
     </body>
 
 </html>
