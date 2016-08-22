@@ -205,7 +205,7 @@ public class EUExFileMgr extends EUExBase {
      * @return 文件夹对象
      */
     public boolean createDir(String[] parm) {
-        if (parm.length != 2) {
+        if (parm.length < 2) {
             return false;
         }
         String inOpCode = parm[0], inPath = parm[1];
@@ -239,7 +239,8 @@ public class EUExFileMgr extends EUExBase {
     }
 
     public boolean mkdir(String[] params){
-        return createDir(new String[]{generateId(),params[0]});
+        OpenVO openVO=DataHelper.gson.fromJson(params[0],OpenVO.class);
+        return createDir(new String[]{generateId(),openVO.path});
     }
 
     /**
@@ -1041,7 +1042,7 @@ public class EUExFileMgr extends EUExBase {
 
     }
 
-    public void closeFile(String[] parm) {
+    public boolean closeFile(String[] parm) {
         String inOpCode = parm[0];
 //		if (!BUtility.isNumeric(inOpCode)) {
 //			return;
@@ -1049,13 +1050,14 @@ public class EUExFileMgr extends EUExBase {
         EUExFile object = objectMap.remove(inOpCode);
         if (object != null) {
             object.close();
+            return true;
         } else {
             errorCallback(inOpCode,
                     EUExCallback.F_E_UEXFILEMGR_CLOSEFILE_1,
                     ResoureFinder.getInstance().getString(mContext,
                             "error_parameter"));
+            return false;
         }
-
     }
 
     public long getReaderOffset(String[] parm) {
