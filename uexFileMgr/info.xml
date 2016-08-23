@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <uexplugins>
     <plugin
-        uexName="uexFileMgr" version="4.0.1" build="23">
+        uexName="uexFileMgr" version="4.0.0" build="23">
         <info>23:getFileRealPath支持获取加密文件的真实路径
               23.1:增加获取文件哈希值的接口</info>
         <build>22:支持function传入</build>
