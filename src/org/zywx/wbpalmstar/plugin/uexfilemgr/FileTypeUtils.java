@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * https://github.com/nbsp-team/MaterialFilePicker
+ *
  * Created by nickolay on 25.10.15.
  */
 
@@ -55,7 +57,7 @@ public class FileTypeUtils {
         }
     }
 
-    private static Map<String, FileType> fileTypeExtensions = new HashMap<>();
+    private static Map<String, FileType> fileTypeExtensions = new HashMap<String, FileType>();
 
     static {
         for (FileType fileType : FileType.values()) {

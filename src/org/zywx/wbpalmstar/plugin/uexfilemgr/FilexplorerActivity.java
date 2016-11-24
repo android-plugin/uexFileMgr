@@ -23,8 +23,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.zywx.wbpalmstar.base.BDebug;
 import org.zywx.wbpalmstar.base.ResoureFinder;
 
@@ -80,14 +78,7 @@ public class FilexplorerActivity extends Activity implements OnItemClickListener
                 final File startFile = new File(startFilePath);
                 if (startFile.exists()) {
                     if (startFile.isDirectory()) {
-                        if (startFile.getAbsolutePath().contains(SDCARD_PATH)) {
-                            currentFile = startFile;
-                        } else {
-                            Toast.makeText(this,
-                                    finder.getString("plugin_file_input_path_is_not_valid_path_redirect_to_sdcard"),
-                                    Toast.LENGTH_LONG).show();
-                            currentFile = new File(sdPath);
-                        }
+                        currentFile = startFile;
                     } else {
                         Toast.makeText(this,
                                 finder.getString("plugin_file_input_path_is_not_valid_path_redirect_to_sdcard"),
@@ -233,9 +224,8 @@ public class FilexplorerActivity extends Activity implements OnItemClickListener
             notifyItemSelectChanged();
         } else if (v == btnSelectConfirm) {
             ArrayList<FileBean> arrayList = fileListAdapter.getTotalSelectedList();
-            String json = combinationJson(arrayList);
             final Intent intent = new Intent(getIntent().getAction());
-            intent.putExtra(F_INTENT_KEY_RETURN_EXPLORER_PATH, json);
+            intent.putExtra(F_INTENT_KEY_RETURN_EXPLORER_PATH, getFileList(arrayList));
             setResult(RESULT_OK, intent);
             finish();
         }
@@ -260,7 +250,13 @@ public class FilexplorerActivity extends Activity implements OnItemClickListener
                 } else {// 点选模式
                     BDebug.i(TAG, "Explorer Return Path:" + clickedFile.getAbsolutePath());
                     final Intent intent = new Intent(getIntent().getAction());
-                    intent.putExtra(F_INTENT_KEY_RETURN_EXPLORER_PATH, clickedFile.getAbsolutePath());
+                    if (canMultiSelected){
+                        ArrayList<String> paths=new ArrayList<String>();
+                        paths.add(clickedFile.getAbsolutePath());
+                        intent.putStringArrayListExtra(F_INTENT_KEY_RETURN_EXPLORER_PATH, paths);
+                    }else{
+                        intent.putExtra(F_INTENT_KEY_RETURN_EXPLORER_PATH, clickedFile.getAbsolutePath());
+                    }
                     setResult(RESULT_OK, intent);
                     finish();
                 }
@@ -327,6 +323,10 @@ public class FilexplorerActivity extends Activity implements OnItemClickListener
         @Override
         protected void onPostExecute(Object result) {
             if (result == null) {
+                if (historyPostionStack.isEmpty()){
+                    finish();
+                    return;
+                }
                 historyPostionStack.pop();
                 Toast.makeText(FilexplorerActivity.this, finder.getString("plugin_file_can_not_open_this_folder"),
                         Toast.LENGTH_SHORT).show();
@@ -399,17 +399,13 @@ public class FilexplorerActivity extends Activity implements OnItemClickListener
         super.onDestroy();
     }
 
-    private String combinationJson(ArrayList<FileBean> list) {
-        JSONObject json = new JSONObject();
+    private ArrayList<String> getFileList(ArrayList<FileBean> list) {
+        ArrayList<String> strings=new ArrayList<String>();
         int index = 0;
         for (FileBean b : list) {
-            try {
-                json.put(String.valueOf(index++), b.getFile().getAbsolutePath());
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            strings.add(b.getFile().getAbsolutePath());
         }
-        return json.toString();
+        return strings;
     }
 
     @Override
