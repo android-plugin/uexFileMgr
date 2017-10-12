@@ -11,6 +11,7 @@ import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -37,7 +38,8 @@ public class FilexplorerActivity extends Activity implements OnItemClickListener
     private static final String TAG = "FilexplorerActicity";
     private ListView lv_fileList;
     private File currentFile;
-    private static final String SDCARD_PATH = "/sdcard";
+    private String SDCARD_PATH = "";
+    private String SBOX_PATH = "";
     private ProgressDialog progressDialog;
     private FileListAdapter fileListAdapter;
     private Button btnBack;
@@ -62,6 +64,8 @@ public class FilexplorerActivity extends Activity implements OnItemClickListener
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        SDCARD_PATH = Environment.getExternalStorageDirectory().getAbsolutePath().replace("/mnt", "");
+        SBOX_PATH = getFilesDir().getAbsolutePath().replace("/files/", "");;
         finder = ResoureFinder.getInstance(this);
         final String sdPath = FileDao.getSDcardPath();
         if (sdPath == null) {// SD卡不存在
@@ -293,7 +297,8 @@ public class FilexplorerActivity extends Activity implements OnItemClickListener
 
     private void backToParent() {
         final File parent = currentFile.getParentFile();
-        if (currentFile.getAbsolutePath().equals(SDCARD_PATH) || parent == null) {
+        if (currentFile.getAbsolutePath().equals(SDCARD_PATH) || parent == null
+                || currentFile.getAbsolutePath().equals(SBOX_PATH)) {
             FilexplorerActivity.this.finish();
         } else {
             openDirectory(parent, false);
@@ -342,7 +347,8 @@ public class FilexplorerActivity extends Activity implements OnItemClickListener
             currentFile = mFile;
             tvTitle.setText(currentFile.getAbsolutePath());
             notifyItemSelectChanged();
-            if (currentFile.getAbsolutePath().equals(SDCARD_PATH)) {
+            if (currentFile.getAbsolutePath().equals(SDCARD_PATH)
+                    || currentFile.getAbsolutePath().equals(SBOX_PATH)) {
                 btnBack.setVisibility(View.INVISIBLE);
             } else {
                 btnBack.setVisibility(View.VISIBLE);

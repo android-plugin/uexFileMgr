@@ -49,6 +49,10 @@ public class EUExFile {
         init(fileType, inPath, inMode, context);
     }
 
+    public boolean checkMode(int baseMode, int inMode) {
+        return ((baseMode & inMode) != 0) ? true : false;
+    }
+
     protected void init(int fileType, String inPath, int inMode, Context context) {
         if (inMode == 8) {
             inMode = 1;
@@ -57,49 +61,40 @@ public class EUExFile {
         m_fileType = fileType;
 
         try {
-            switch (inMode) {
-                case EUExFileMgr.F_FILE_OPEN_MODE_NEW:
-                case EUExFileMgr.F_FILE_OPEN_MODE_WRITE:
-                case EUExFileMgr.F_FILE_OPEN_MODE_WRITE
-                        | EUExFileMgr.F_FILE_OPEN_MODE_NEW:
-                case EUExFileMgr.F_FILE_OPEN_MODE_NEW
-                        | EUExFileMgr.F_FILE_OPEN_MODE_READ:
-                case EUExFileMgr.F_FILE_OPEN_MODE_READ
-                        | EUExFileMgr.F_FILE_OPEN_MODE_WRITE:
-                case 7:
-                    File file = new File(inPath);
-                    if (m_fileType == EUExFileMgr.F_TYPE_DIR) {
-                        if (!file.exists()) {
-                            file.mkdirs();
-                            FileUtility.storageCreateTime2Sp(context, inPath);
-                        } else {
-                            FileUtility.storageLastTime2Sp(context, inPath, file.lastModified());
-                        }
-                        return;
-                    }
-
-                    if (!file.getParentFile().exists()) {
-                        file.getParentFile().mkdirs();
-                    }
+            if (checkMode(EUExFileMgr.F_FILE_OPEN_MODE_NEW, inMode)
+                    || checkMode(EUExFileMgr.F_FILE_OPEN_MODE_WRITE, inMode)) {
+                File file = new File(inPath);
+                if (m_fileType == EUExFileMgr.F_TYPE_DIR) {
                     if (!file.exists()) {
-                        file.createNewFile();
+                        file.mkdirs();
                         FileUtility.storageCreateTime2Sp(context, inPath);
                     } else {
                         FileUtility.storageLastTime2Sp(context, inPath, file.lastModified());
                     }
-                    break;
-                case EUExFileMgr.F_FILE_OPEN_MODE_READ:
-                    if (inPath.startsWith("/")) {
-                        File readFile = new File(inPath);
-                        if (!readFile.exists()) {
-                            m_errorType = F_ERROR_FILE_NOT_EXIST;
-                            return;
-                        }
-                        m_inputStream = new FileInputStream(readFile);
-                    } else {
-                        m_inputStream = m_eContext.getAssets().open(inPath);
+                    return;
+                }
+
+                if (!file.getParentFile().exists()) {
+                    file.getParentFile().mkdirs();
+                }
+                if (!file.exists()) {
+                    file.createNewFile();
+                    FileUtility.storageCreateTime2Sp(context, inPath);
+                } else {
+                    FileUtility.storageLastTime2Sp(context, inPath, file.lastModified());
+                }
+            }
+            if (checkMode(EUExFileMgr.F_FILE_OPEN_MODE_READ, inMode)) {
+                if (inPath.startsWith("/")) {
+                    File readFile = new File(inPath);
+                    if (!readFile.exists()) {
+                        m_errorType = F_ERROR_FILE_NOT_EXIST;
+                        return;
                     }
-                    break;
+                    m_inputStream = new FileInputStream(readFile);
+                } else {
+                    m_inputStream = m_eContext.getAssets().open(inPath);
+                }
             }
 
         } catch (SecurityException e) {
@@ -207,8 +202,10 @@ public class EUExFile {
                 bos.write(bytes);
                 bos.flush();
             } else {
-                m_fout.write(data);
-                m_fout.flush();
+                if (m_fout != null) {
+                    m_fout.write(data);
+                    m_fout.flush();
+                }
             }
             return true;
         } catch (IOException e) {
