@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <uexplugins>
     <plugin
-        uexName="uexFileMgr" version="3.0.22" build="22">
-        <info>22:getFileRealPath支持获取加密文件的真实路径
-              22.1:增加获取文件哈希值的接口</info>
+        uexName="uexFileMgr" version="3.0.25" build="25">
+        <info>25:修复EUExFile中空指针异常</info>
+        <build>24:打开文件管理器返回失败问题</build>
+        <build>23:修复开启增量更新widget未拷贝完成时获取路径错误问题</build>
+        <build>22:getFileRealPath支持获取加密文件的真实路径
+              22.1:增加获取文件哈希值的接口</build>
         <build>21:修正图片以Base64写入后打开失败的问题</build>
         <build>20:修正部分成功失败的状态回调返回的回调数据类型错误的问题</build>
         <build>19:修正readFile接口的option参数可以为空</build>
