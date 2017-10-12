@@ -3,6 +3,7 @@ package org.zywx.wbpalmstar.plugin.uexfilemgr;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -371,5 +372,25 @@ public class FileUtility {
             fileSizeLong = Double.valueOf(df.format((double) fileS));
         }
         return fileSizeLong;
+    }
+
+    /**
+     * @return widget目录是否拷贝完成到沙箱目录
+     */
+    public static boolean getIsCopyAssetsFinish(Context context) {
+       boolean isCopyAssetsFinish = false;
+       try {
+            String javaName = "org.zywx.wbpalmstar.base.BUtility";
+            Class c = Class.forName(javaName, true, context.getClassLoader());
+            Method m = c.getMethod("getIsCopyAssetsFinish");
+            if (null != m) {
+                Object object = m.invoke(c, new Object[]{null});
+                if (null != object) {
+                    isCopyAssetsFinish = ((Boolean) object).booleanValue();
+                }
+            }
+        } catch (Exception e) {
+        }
+        return isCopyAssetsFinish;
     }
 }
