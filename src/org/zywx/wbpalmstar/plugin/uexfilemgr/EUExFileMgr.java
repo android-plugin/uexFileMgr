@@ -852,7 +852,8 @@ public class EUExFileMgr extends EUExBase {
                     mBrwView.getCurrentWidget().m_wgtType);
             if (m_indexUrl.contains("widget/plugin/")) {
                 String widgetPaTh = "";
-                if (checkAppStatus(mContext, mBrwView.getRootWidget().m_appId))
+                if (checkAppStatus(mContext, mBrwView.getRootWidget().m_appId)
+                        && FileUtility.getIsCopyAssetsFinish(mContext))
                     widgetPaTh = (boxPathString + "widget/plugin/"
                             + mBrwView.getCurrentWidget().m_appId + File.separator);
                 else {

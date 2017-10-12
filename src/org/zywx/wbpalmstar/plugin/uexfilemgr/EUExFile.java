@@ -49,6 +49,10 @@ public class EUExFile {
 		init(fileType, inPath, inMode, context);
 	}
 
+    public boolean checkMode(int baseMode, int inMode) {
+        return ((baseMode & inMode) != 0) ? true : false;
+    }
+
 	protected void init(int fileType, String inPath, int inMode, Context context) {
 		if (inMode == 8) {
 			inMode = 1;
@@ -57,15 +61,8 @@ public class EUExFile {
 		m_fileType = fileType;
 
 		try {
-			switch (inMode) {
-			case EUExFileMgr.F_FILE_OPEN_MODE_NEW:
-			case EUExFileMgr.F_FILE_OPEN_MODE_WRITE:
-			case EUExFileMgr.F_FILE_OPEN_MODE_WRITE
-					| EUExFileMgr.F_FILE_OPEN_MODE_NEW:
-			case EUExFileMgr.F_FILE_OPEN_MODE_NEW
-					| EUExFileMgr.F_FILE_OPEN_MODE_READ:
-			case EUExFileMgr.F_FILE_OPEN_MODE_READ
-					| EUExFileMgr.F_FILE_OPEN_MODE_WRITE:
+			if (checkMode(EUExFileMgr.F_FILE_OPEN_MODE_NEW, inMode)
+					|| checkMode(EUExFileMgr.F_FILE_OPEN_MODE_WRITE, inMode)) {
 				File file = new File(inPath);
 				if (m_fileType == EUExFileMgr.F_TYPE_DIR) {
 					if (!file.exists()) {
@@ -86,8 +83,8 @@ public class EUExFile {
 				}else {
 					FileUtility.storageLastTime2Sp(context, inPath, file.lastModified());
 				}
-				break;
-			case EUExFileMgr.F_FILE_OPEN_MODE_READ:
+			}
+			if (checkMode(EUExFileMgr.F_FILE_OPEN_MODE_READ, inMode)) {
 				if (inPath.startsWith("/")) {
 					File readFile = new File(inPath);
 					if (!readFile.exists()) {
@@ -98,7 +95,6 @@ public class EUExFile {
 				} else {
 					m_inputStream = m_eContext.getAssets().open(inPath);
 				}
-				break;
 			}
 
 		} catch (SecurityException e) {
@@ -208,8 +204,10 @@ public class EUExFile {
                 bos.write(bytes);
                 bos.flush();
             } else {
-                m_fout.write(data);
-                m_fout.flush();
+                if (m_fout != null) {
+                    m_fout.write(data);
+                    m_fout.flush();
+                }
             }
             return true;
         } catch (IOException e) {
@@ -272,24 +270,7 @@ public class EUExFile {
 			buffer = new byte[newLen];
 		}
 		try {
-			if (m_inputStream != null) {
-
-				if (newLen == -1) {
-					buffer = new byte[m_inputStream.available()];
-					m_inputStream.read(buffer);
-				} else {
-					m_inputStream.read(buffer, 0, newLen);
-				}
-				if (!TextUtils.isEmpty(m_key)) {
-					return Rc4Encrypt.decry_RC4(EncodingUtils.getString(buffer, "UTF-8"), m_key);
-				}
-                if (mode == 1) {
-                    return Base64.encodeToString(buffer, Base64.DEFAULT);
-                } else {
-                    return EncodingUtils.getString(buffer, "UTF-8");
-                }
-
-			} else {
+			if (m_inputStream == null) {
 				BDebug.i("appcan","m_inputStream is null...");
 				if (m_inPath.startsWith("/")) {
 					File readFile = new File(m_inPath);
@@ -302,6 +283,20 @@ public class EUExFile {
 					m_inputStream = m_eContext.getAssets().open(m_inPath);
 				}
 			}
+			if (newLen == -1) {
+				buffer = new byte[m_inputStream.available()];
+				m_inputStream.read(buffer);
+			} else {
+				m_inputStream.read(buffer, 0, newLen);
+			}
+			if (!TextUtils.isEmpty(m_key)) {
+				return Rc4Encrypt.decry_RC4(EncodingUtils.getString(buffer, "UTF-8"), m_key);
+			}
+            if (mode == 1) {
+                return Base64.encodeToString(buffer, Base64.DEFAULT);
+            } else {
+                return EncodingUtils.getString(buffer, "UTF-8");
+            }
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
