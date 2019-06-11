@@ -35,6 +35,7 @@ import org.zywx.wbpalmstar.widgetone.dataservice.WWidgetData;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,8 +43,13 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -80,6 +86,9 @@ public class EUExFileMgr extends EUExBase {
     private static final String F_CALLBACK_NAME_SEARCH = "uexFileMgr.cbSearch";
     private static final String F_CALLBACK_NAME_COPYFILE = "uexFileMgr.cbCopyFile";
     private static final String F_CALLBACK_NAME_GETFILEHASHVALUE = "uexFileMgr.cbGetFileHashValue";
+
+    private static final String FILECREATETIMESTAMP = "uexFileMgr.cbFilecreatetimestamp";
+
 
     public static final int F_FILE_OPEN_MODE_READ = 0x1;
     public static final int F_FILE_OPEN_MODE_WRITE = 0x2;
@@ -1292,6 +1301,7 @@ public class EUExFileMgr extends EUExBase {
                         EUExCallback.F_C_TEXT, "");
                 return null;
             }
+            //获取所有文件
             File[] fileList = srcFile.listFiles();
             JSONArray array = new JSONArray();
             String resultJson = "";
@@ -1301,10 +1311,28 @@ public class EUExFileMgr extends EUExBase {
                 if (fileItem.isDirectory()) {
                     resValue = EUExCallback.F_C_Folder;
                 }
+                Calendar c = Calendar.getInstance();
+                Date date = c.getTime();
+//                SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd HHmmss");
+//                String fileCreateTimestamp = df.format(date);
+//                Log.e("111",fileCreateTimestamp);
+                //String  fileCreateTimestamp = date.toLocaleString();
+                long stf = date.getTime();
+                String fileCreateTimestamp = String.valueOf(stf);
+
+
+                File file = new File(fileItem.getAbsolutePath());
+                long fileModTimestamp = file.lastModified();//返回文件最后修改时间，是以个long型毫秒数
+
+//                String fileModTimestamp = new SimpleDateFormat("yyyyMMdd hhmmss").format(new Date(time));
+//                Log.e("11",fileModTimestamp);
+
                 JSONObject json = new JSONObject();
                 json.put("fileName", fileItem.getName());
                 json.put("filePath", fileItem.getAbsolutePath());
                 json.put("fileType", resValue);
+                json.put("fileCreateTimestamp", fileCreateTimestamp);
+                json.put("fileModTimestamp", fileModTimestamp);
                 array.put(json);
             }
             resultJson = array.toString();

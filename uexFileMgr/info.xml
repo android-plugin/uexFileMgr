@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <uexplugins>
     <plugin
-        uexName="uexFileMgr" version="4.0.2" build="2017092501">
-        <info>2:修复EUExFile中空指针异常</info>
+        uexName="uexFileMgr" version="4.0.5" build="2017092501">
+        <info>4:修改回调方式</info>
+        <build>3:获取创建和修改时间</build>
+        <build>2:修复EUExFile中空指针异常</build>
         <build>0:4.0 插件
               1.1:开启增量更新widget未拷贝完成时获取路径错误;打开文件管理器返回失败问题</build>
     </plugin>

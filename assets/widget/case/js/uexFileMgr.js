@@ -246,6 +246,7 @@ if (UNIT_TEST) {
             var info = uexFileMgr.getFileListByPath("wgt://");
             UNIT_TEST.log(JSON.stringify(info));
             UNIT_TEST.assertTrue(info != null);
+
         },
         "explorer" : function() {
             uexFileMgr.explorer("wgt://", function(error, path) {
