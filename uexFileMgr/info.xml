@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <uexplugins>
     <plugin
-        uexName="uexFileMgr" version="4.0.5" build="2017092501">
-        <info>4:修改回调方式</info>
+        uexName="uexFileMgr" version="4.3.5" build="2020061101">
+        <info>5:修改回调方式，以及若干小问题</info>
         <build>3:获取创建和修改时间</build>
         <build>2:修复EUExFile中空指针异常</build>
         <build>0:4.0 插件

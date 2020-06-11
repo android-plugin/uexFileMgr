@@ -87,8 +87,6 @@ public class EUExFileMgr extends EUExBase {
     private static final String F_CALLBACK_NAME_COPYFILE = "uexFileMgr.cbCopyFile";
     private static final String F_CALLBACK_NAME_GETFILEHASHVALUE = "uexFileMgr.cbGetFileHashValue";
 
-    private static final String FILECREATETIMESTAMP = "uexFileMgr.cbFilecreatetimestamp";
-
 
     public static final int F_FILE_OPEN_MODE_READ = 0x1;
     public static final int F_FILE_OPEN_MODE_WRITE = 0x2;
