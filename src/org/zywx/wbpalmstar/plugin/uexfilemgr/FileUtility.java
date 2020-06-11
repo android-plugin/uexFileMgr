@@ -282,7 +282,8 @@ public class FileUtility {
 		cv.drawBitmap(bg, 0, 0, null);// 在 0，0坐标开始画入bg
 		cv.drawBitmap(hover, bgWidth / 4, bgHeight / 4, null);// hover居中
 		// save all clip
-		cv.save(Canvas.ALL_SAVE_FLAG);// 保存
+//		cv.save(Canvas.ALL_SAVE_FLAG);// 保存
+		cv.save();// 保存
 		// store
 		cv.restore();// 存储
 		if (!bg.isRecycled()) {
