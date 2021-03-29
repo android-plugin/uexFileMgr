@@ -869,10 +869,16 @@ public class EUExFileMgr extends EUExBase {
         final EUExFile object = objectMap.get(inOpCode);
         if (object != null) {
             final int finalCallbackId = callbackId;
+
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    boolean result = object.write(inData, Integer.parseInt(inMode));
+                    boolean result = false;
+                    if (object != null) {
+                        result = object.write(inData, Integer.parseInt(inMode));
+                    }else{
+                        BDebug.e(tag, "writeFile: EUExFile object is null cause by being closed probably: inOpCode=" + inOpCode);
+                    }
                     if(finalCallbackId !=-1 ){
                         callbackToJs(finalCallbackId,false, result?0:1);
                     }else{
@@ -922,8 +928,13 @@ public class EUExFileMgr extends EUExBase {
             new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    String resString = object.read(Integer
-                            .parseInt(inLen), Integer.parseInt(finalModeStr));
+                    String resString = null;
+                    if (object != null) {
+                        resString = object.read(Integer
+                                .parseInt(inLen), Integer.parseInt(finalModeStr));
+                    }else{
+                        BDebug.e(tag, "readFile: EUExFile object is null cause by being closed probably: inOpCode=" + inOpCode);
+                    }
                     String result = TextUtils.isEmpty(resString) ? "" : BUtility.transcoding(resString);
                     if (finalCallbackId !=-1){
                         callbackToJs(finalCallbackId,false, 0,result);
