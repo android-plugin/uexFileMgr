@@ -6,12 +6,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import org.zywx.wbpalmstar.base.ACEImageLoader;
+import org.zywx.wbpalmstar.base.BDebug;
 import org.zywx.wbpalmstar.base.ResoureFinder;
 
 import java.util.ArrayList;
@@ -29,7 +30,7 @@ public class FileListAdapter extends BaseAdapter {
 	public static final String TAG = "FileListAdapter";
 	private ArrayList<FileBean> m_listItems = new ArrayList<FileBean>();
 	private LayoutInflater m_inflater;
-	private ListView listView;
+	private FileListView listView;
 	private Activity activity;
 	private int folderDrawableId;
 	private int emptyFolderDrawableId;
@@ -39,14 +40,16 @@ public class FileListAdapter extends BaseAdapter {
 	private int photoDrawableId;
 	private SparseBooleanArray listSelectStates;
 	private boolean multiSelectMode = false;
+	private boolean canDirectorySelected = false;
 	private ResoureFinder finder;
 	private ArrayList<FileBean> totalSelectedList = new ArrayList<FileBean>();
 
-	public FileListAdapter(Activity context, ArrayList<FileBean> fileListData, ListView listView) {
+	public FileListAdapter(Activity context, ArrayList<FileBean> fileListData, FileListView listView, boolean canDirectorySelected) {
 		finder = ResoureFinder.getInstance(context);
 		this.activity = context;
 		m_inflater = LayoutInflater.from(context);
 		m_listItems = fileListData;
+		this.canDirectorySelected = canDirectorySelected;
 		listSelectStates = new SparseBooleanArray(m_listItems.size());
 		this.listView = listView;
 		finder = ResoureFinder.getInstance();
@@ -145,7 +148,7 @@ public class FileListAdapter extends BaseAdapter {
 	public void setItemSelectState(int postion, boolean state) {
 		listSelectStates.put(postion, state);
 		FileBean fileBean = m_listItems.get(postion);
-		if (fileBean.getFile().isDirectory()) {
+		if (fileBean.getFile().isDirectory() && !this.canDirectorySelected) {
 			throw new IllegalStateException("Directory can't be selected!");
 		}
 		if (state) {
@@ -275,6 +278,7 @@ public class FileListAdapter extends BaseAdapter {
 
 	public View getView(final int position, View convertView, ViewGroup parent) {
 		ViewHolder viewHolder = null;
+		FileListView.OnItemContentClickListener onItemContentClickListener = this.listView.getOnItemContentClickListener();
 		if (convertView == null) {
 			convertView = m_inflater.inflate(finder.getLayoutId("plugin_file_filelist_item"), null);
 			viewHolder = new ViewHolder();
@@ -283,6 +287,8 @@ public class FileListAdapter extends BaseAdapter {
 			viewHolder.sizeTextView = (TextView) convertView.findViewById(finder.getId("plugin_file_tv_file_size"));
 			viewHolder.selectCheckBox = (CheckBox) convertView
 					.findViewById(finder.getId("plugin_file_cb_select_state"));
+
+			viewHolder.btnSelectItem = (Button) convertView.findViewById(finder.getId("plugin_file_btn_file_select"));
 			convertView.setTag(viewHolder);// 缓存视图
 		} else {
 			viewHolder = (ViewHolder) convertView.getTag();
@@ -294,13 +300,27 @@ public class FileListAdapter extends BaseAdapter {
         FileTypeUtils.FileType fileType=FileTypeUtils.getFileType(bean.getFile());
 		boolean isFolder = bean.getFile().isDirectory();
 		if (multiSelectMode) {// 处于多选模式
-			if (isFolder) {
+			if (isFolder && !this.canDirectorySelected) {
 				viewHolder.selectCheckBox.setVisibility(View.INVISIBLE);
 			} else {
 				viewHolder.selectCheckBox.setVisibility(View.VISIBLE);
 				viewHolder.selectCheckBox.setChecked(listSelectStates.get(position));
 			}
 		} else {
+			if (this.canDirectorySelected) {
+				viewHolder.btnSelectItem.setOnClickListener(new View.OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						BDebug.i(TAG, "btnSelectItem onClick: " + filePath);
+						if (onItemContentClickListener != null) {
+							onItemContentClickListener.onContentItemClick(listView, v, position);
+						}
+					}
+				});
+				viewHolder.btnSelectItem.setVisibility(View.VISIBLE);
+			} else {
+				viewHolder.btnSelectItem.setVisibility(View.GONE);
+			}
 			viewHolder.selectCheckBox.setVisibility(View.GONE);
 		}
 		// 设置图片链接为imageview 的tag来标记该imageview当前应该显示的图片
@@ -326,6 +346,7 @@ public class FileListAdapter extends BaseAdapter {
 		ImageView iconImageView;
 		TextView nameTextView;
 		TextView sizeTextView;
+		Button btnSelectItem;
 		CheckBox selectCheckBox;
 	}
 }

@@ -49,7 +49,7 @@
 
     <!-- 文件列表 -->
 
-    <ListView
+    <org.zywx.wbpalmstar.plugin.uexfilemgr.FileListView
         android:id="@+id/plugin_file_lv_file_list"
         android:layout_width="fill_parent"
         android:layout_height="0dip"
@@ -59,7 +59,7 @@
         android:divider="@android:color/transparent"
         android:dividerHeight="0dip"
         android:listSelector="@android:color/transparent">
-    </ListView>
+    </org.zywx.wbpalmstar.plugin.uexfilemgr.FileListView>
 
     <LinearLayout
         android:id="@+id/plugin_file_bottom_layout"

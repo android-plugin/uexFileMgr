@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="fill_parent"
-              android:layout_height="wrap_content"
-              android:background="@drawable/plugin_file_filelist_item_bg_selector"
-              android:orientation="horizontal">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/plugin_file_filelist_item_bg_selector"
+    android:orientation="horizontal">
 
     <ImageView
         android:id="@+id/plugin_file_iv_file_icon"
@@ -40,6 +41,23 @@
             android:textSize="14dp"/>
 
     </LinearLayout>
+    <Button
+        android:id="@+id/plugin_file_btn_file_select"
+        android:layout_width="64dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginRight="12dp"
+        android:gravity="center"
+        android:paddingLeft="12dp"
+        android:paddingRight="12dp"
+        android:textColor="@color/plugin_file_explorer_main_color"
+        android:background="@android:color/transparent"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:text="@string/plugin_file_btn_text_select"
+        android:visibility="gone"
+        android:focusable="false"
+        tools:visibility="visible"/>
     <CheckBox
         android:id="@+id/plugin_file_cb_select_state"
         style="@style/Style.plugin_file_item_checkbox"
@@ -50,5 +68,6 @@
         android:layout_gravity="center_vertical"
         android:focusableInTouchMode="false"
         android:layout_marginRight="16dp"
-        android:visibility="gone"/>
+        android:visibility="gone"
+        tools:visibility="visible" />
 </LinearLayout>

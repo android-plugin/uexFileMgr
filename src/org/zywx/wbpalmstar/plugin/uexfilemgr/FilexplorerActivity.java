@@ -20,7 +20,6 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,12 +30,13 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Stack;
 
-public class FilexplorerActivity extends Activity implements OnItemClickListener, OnClickListener {
+public class FilexplorerActivity extends Activity implements OnItemClickListener, OnClickListener, FileListView.OnItemContentClickListener {
     public static final String F_INTENT_KEY_RETURN_EXPLORER_PATH = "returnExplorerPath";
     public static final String F_INTENT_KEY_RETURN_PATH_LIST = "pathList";
     public static final String F_INTENT_KEY_MULTI_FLAG = "flag";
+    public static final String F_INTENT_KEY_DIRECTORY_FLAG = "directory_flag";
     private static final String TAG = "FilexplorerActicity";
-    private ListView lv_fileList;
+    private FileListView lv_fileList;
     private File currentFile;
     private String SDCARD_PATH = "";
     private String SBOX_PATH = "";
@@ -52,6 +52,7 @@ public class FilexplorerActivity extends Activity implements OnItemClickListener
     private FileDao fileDao = null;
     private Stack<Integer> historyPostionStack;
     private boolean canMultiSelected = true;
+    private boolean canDirectorySelected = false;
     private Animator popUpAnim;
     private Animator pushDownAnim;
     private Drawable cancelDrawable;
@@ -75,6 +76,8 @@ public class FilexplorerActivity extends Activity implements OnItemClickListener
         final Intent intent = getIntent();
         if (intent != null && intent.getData() != null) {
             canMultiSelected = intent.getBooleanExtra(F_INTENT_KEY_MULTI_FLAG, false);
+            // true表示选择目录，false表示选择文件
+            canDirectorySelected = intent.getBooleanExtra(F_INTENT_KEY_DIRECTORY_FLAG, false);
             final String startFilePath = intent.getData().getPath();
             if (startFilePath == null) {
                 currentFile = new File(sdPath);
@@ -120,9 +123,10 @@ public class FilexplorerActivity extends Activity implements OnItemClickListener
             btnCancel.setVisibility(View.GONE);
         }
         tvTitle = (TextView) findViewById(finder.getId("plugin_file_top_title"));
-        lv_fileList = (ListView) findViewById(finder.getId("plugin_file_lv_file_list"));
+        lv_fileList = (FileListView) findViewById(finder.getId("plugin_file_lv_file_list"));
         lv_fileList.setOnItemClickListener(this);
         lv_fileList.setItemsCanFocus(false);
+        lv_fileList.setOnItemContentClickListener(this);
         layoutBottom = (LinearLayout) findViewById(finder.getId("plugin_file_bottom_layout"));
 
         btnSelectAll = (Button) findViewById(finder.getId("plugin_file_bottom_btn_select_all"));
@@ -239,30 +243,54 @@ public class FilexplorerActivity extends Activity implements OnItemClickListener
      * 点击ListView子项事件处理函数
      */
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        if (parent == lv_fileList) {
-            final File clickedFile = fileListAdapter.getItem(position).getFile();// 获得被点击的FileBean对象
-            if (clickedFile.isDirectory()) {// 点击了文件夹
-                int firstVisablePostion = lv_fileList.getFirstVisiblePosition();
-                historyPostionStack.push(firstVisablePostion);
-                openDirectory(clickedFile, true);
-            } else {// 点击了文件
-                // 多选模式
-                if (fileListAdapter.isMultiSelectMode()) {
-                    boolean isChecked = fileListAdapter.getItemSelectState(position);
-                    fileListAdapter.setItemSelectState(position, !isChecked);
-                    notifyItemSelectChanged();
-                } else {// 点选模式
-                    BDebug.i(TAG, "Explorer Return Path:" + clickedFile.getAbsolutePath());
-                    final Intent intent = new Intent(getIntent().getAction());
-                    if (canMultiSelected){
-                        ArrayList<String> paths=new ArrayList<String>();
-                        paths.add(clickedFile.getAbsolutePath());
-                        intent.putStringArrayListExtra(F_INTENT_KEY_RETURN_EXPLORER_PATH, paths);
-                    }else{
-                        intent.putExtra(F_INTENT_KEY_RETURN_EXPLORER_PATH, clickedFile.getAbsolutePath());
+        BDebug.i(TAG, "onItemClick: " + position);
+        handleListItemClick(parent, position, false);
+    }
+
+    @Override
+    public void onContentItemClick(FileListView listView, View view, int position) {
+        BDebug.i(TAG, "onItemClick: " + position);
+        handleListItemClick(listView, position, true);
+    }
+
+    private void handleListItemClick(AdapterView<?> parent, int position, boolean isSelectButton) {
+        if (isSelectButton) {
+            // 处理文件列表中点击选择按钮时候的事件，与上面的不是一个事
+            if (parent == this.lv_fileList) {
+                final File clickedFile = fileListAdapter.getItem(position).getFile();// 获得被点击的FileBean对象
+                // 点选模式
+                BDebug.i(TAG, "Explorer Return Path:" + clickedFile.getAbsolutePath());
+                final Intent intent = new Intent(getIntent().getAction());
+                intent.putExtra(F_INTENT_KEY_RETURN_EXPLORER_PATH, clickedFile.getAbsolutePath());
+                setResult(RESULT_OK, intent);
+                finish();
+            }
+        } else {
+            if (parent == this.lv_fileList) {
+                final File clickedFile = fileListAdapter.getItem(position).getFile();// 获得被点击的FileBean对象
+                if (clickedFile.isDirectory()) {// 点击了文件夹
+                    int firstVisablePostion = lv_fileList.getFirstVisiblePosition();
+                    historyPostionStack.push(firstVisablePostion);
+                    openDirectory(clickedFile, true);
+                } else {// 点击了文件
+                    // 多选模式
+                    if (fileListAdapter.isMultiSelectMode()) {
+                        boolean isChecked = fileListAdapter.getItemSelectState(position);
+                        fileListAdapter.setItemSelectState(position, !isChecked);
+                        notifyItemSelectChanged();
+                    } else {// 点选模式
+                        BDebug.i(TAG, "Explorer Return Path:" + clickedFile.getAbsolutePath());
+                        final Intent intent = new Intent(getIntent().getAction());
+                        if (canMultiSelected){
+                            ArrayList<String> paths=new ArrayList<String>();
+                            paths.add(clickedFile.getAbsolutePath());
+                            intent.putStringArrayListExtra(F_INTENT_KEY_RETURN_EXPLORER_PATH, paths);
+                        }else{
+                            intent.putExtra(F_INTENT_KEY_RETURN_EXPLORER_PATH, clickedFile.getAbsolutePath());
+                        }
+                        setResult(RESULT_OK, intent);
+                        finish();
                     }
-                    setResult(RESULT_OK, intent);
-                    finish();
                 }
             }
         }
@@ -339,7 +367,7 @@ public class FilexplorerActivity extends Activity implements OnItemClickListener
             }
             ArrayList<FileBean> fileList = (ArrayList<FileBean>) result;
             if (fileListAdapter == null) {
-                fileListAdapter = new FileListAdapter(FilexplorerActivity.this, fileList, lv_fileList);
+                fileListAdapter = new FileListAdapter(FilexplorerActivity.this, fileList, lv_fileList, canDirectorySelected);
                 lv_fileList.setAdapter(fileListAdapter);
             } else {
                 fileListAdapter.reload(fileList);

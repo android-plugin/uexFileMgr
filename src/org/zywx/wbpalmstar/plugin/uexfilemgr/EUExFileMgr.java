@@ -35,7 +35,6 @@ import org.zywx.wbpalmstar.widgetone.dataservice.WWidgetData;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,10 +42,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.channels.FileChannel;
-import java.nio.file.Files;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -652,7 +648,16 @@ public class EUExFileMgr extends EUExBase {
     }
 
     public void explorer(String[] parm) {
-        String inPath = parm[0];
+        // 判断parm[0]是否为json，是则解析其中的参数，否，则直接认为parm[0]就是inPath
+        String inPath = null;
+        boolean canDirectorySelected = false;
+        try {
+            JSONObject jsonParams = new JSONObject(parm[0]);
+            inPath = jsonParams.optString("inPath", null);
+            canDirectorySelected = jsonParams.optBoolean("canDirectorySelected", false);
+        } catch (JSONException e) {
+            inPath = parm[0];
+        }
         if (parm.length > 1) {
             try {
                 mExplorerCallbackId = Integer.valueOf(parm[1]);
@@ -685,6 +690,9 @@ public class EUExFileMgr extends EUExBase {
                         intent.putExtra(
                                 FilexplorerActivity.F_INTENT_KEY_MULTI_FLAG,
                                 false);
+                        intent.putExtra(
+                                FilexplorerActivity.F_INTENT_KEY_DIRECTORY_FLAG,
+                                canDirectorySelected);
                         startActivityForResult(intent,
                                 F_ACT_REQ_CODE_UEX_FILE_EXPLORER);
                     } else {
@@ -1754,21 +1762,21 @@ public class EUExFileMgr extends EUExBase {
         }
         final String srcFileRealPath = BUtility.makeRealPath(BUtility.makeUrl(mBrwView.getCurrentUrl(), srcFilePath),
                 mBrwView.getCurrentWidget().m_widgetPath, mBrwView.getCurrentWidget().m_wgtType);
-        Log.i("srcFileRealPath", srcFileRealPath);
+        Log.i(tag, "srcFileRealPath: " + srcFileRealPath);
         if (srcFileRealPath.startsWith(BUtility.F_Widget_RES_path)) {
             flag = true;
         }
-        final File temp = new File(srcFileRealPath);
         final String objRealPath = BUtility.makeRealPath(BUtility.makeUrl(mBrwView.getCurrentUrl(), objPath),
                 mBrwView.getCurrentWidget().m_widgetPath, mBrwView.getCurrentWidget().m_wgtType);
-        Log.i("objRealPath", objRealPath + temp.getName());
-
 
         final boolean finalFlag = flag;
         final int finalCallbackId = callbackId;
         new Thread(new Runnable() {
             @Override
             public void run() {
+                File srcFile = new File(srcFileRealPath);
+                File outFile = new File(objRealPath, srcFile.getName());
+                Log.i(tag, "outFile: " + outFile.getAbsolutePath());
                 FileInputStream fi = null;
                 FileOutputStream fo = null;
                 FileChannel in = null;
@@ -1779,7 +1787,6 @@ public class EUExFileMgr extends EUExBase {
                     try {
                         in_a = mContext.getAssets().open(srcFileRealPath);
                         int length = in_a.available();
-                        File outFile = new File(objRealPath + temp.getName());
                         out_a = new FileOutputStream(outFile);
                         byte[] buffer = new byte[1024];
                         int read;
@@ -1791,7 +1798,7 @@ public class EUExFileMgr extends EUExBase {
                         out_a.flush();
                         out_a.close();
                         out_a = null;
-                        File copied = new File(objRealPath + temp.getName());
+                        File copied = new File(objRealPath + srcFile.getName());
                         if (copied.exists() && copied.length() == length) {
                             if (finalCallbackId != -1) {
                                 callbackToJs(finalCallbackId, false, 0);
@@ -1809,22 +1816,10 @@ public class EUExFileMgr extends EUExBase {
                         }
                     }
                 } else {
+                    // 复制除了assets路径以外的文件的情况
                     try {
-                        fi = new FileInputStream(srcFileRealPath);
-                        fo = new FileOutputStream(objRealPath + temp.getName());
-                        in = fi.getChannel();
-                        out = fo.getChannel();
-                        in.transferTo(0, in.size(), out);
-                        in.close();
-                        in = null;
-                        out.close();
-                        out = null;
-                        fo.close();
-                        fo = null;
-                        fi.close();
-                        fi = null;
-                        File copied = new File(objRealPath + temp.getName());
-                        if (copied.exists() && copied.length() == temp.length()) {
+                        FileCopier.copyDirectory(srcFile, outFile);
+                        if (outFile.exists() && outFile.length() == srcFile.length()) {
                             if (finalCallbackId != -1) {
                                 callbackToJs(finalCallbackId, false, 0);
                             }
