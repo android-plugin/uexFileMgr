@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <uexplugins>
     <plugin
-        uexName="uexFileMgr" version="4.3.6" build="2021032901">
-        <info>6:修复一个读写文件可能导致的闪退问题</info>
+        uexName="uexFileMgr" version="4.3.7" build="2023021301">
+        <info>7:增强copy接口，支持目录拷贝；增强explorer接口，支持目录选择</info>
+        <build>6:修复一个读写文件可能导致的闪退问题</build>
         <build>5:修改回调方式，以及若干小问题</build>
         <build>3:获取创建和修改时间</build>
         <build>2:修复EUExFile中空指针异常</build>
