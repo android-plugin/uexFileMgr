@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html class="um landscape min-width-240px min-width-320px min-width-480px min-width-768px min-width-1024px">
+
+<head>
+    <title> </title>
+    <meta charset="utf-8" />
+    <meta name="viewport"
+          content="target-densitydpi=device-dpi, width=device-width, initial-scale=1, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
+    <link rel="stylesheet" href="css/fonts/font-awesome.min.css" />
+    <link rel="stylesheet" href="css/ui-box.css" />
+    <link rel="stylesheet" href="css/ui-base.css" />
+    <link rel="stylesheet" href="css/ui-color.css" />
+    <link rel="stylesheet" href="css/appcan.icon.css" />
+    <link rel="stylesheet" href="css/appcan.control.css" />
+    <link rel="stylesheet" href="./css/index.css" />
+    <script src="js/eruda.min.js"></script>
+    <script src="./js/index.js"></script>
+</head>
+
+<body class="" ontouchstart>
+<div class="bc-bg" tabindex="0" data-control="PAGE" id="Page_ylUCGd">
+    <div class="uh bc-head ubb bc-border" data-control="HEADER" id="Header_bPMcMr">
+        <div class="ub">
+            <div class="nav-btn" id="nav-left">
+                <div class="fa fa-1g ub-img1"></div>
+            </div>
+            <h1 class="ut ub-f1 ulev-3 ut-s tx-c" tabindex="0">测试系统</h1>
+            <div class="nav-btn" id="nav-right">
+                <div class="fa fa-1g ub-img1"></div>
+            </div>
+        </div>
+    </div>
+    <div class="btncss" data-control="BOX">
+        <div class="button ub ub-ac bc-text-head ub-pc bc-btn"
+             onclick="uexFileMgrCase.explorer()">
+            打开文件浏览
+        </div>
+        <div class="button ub ub-ac bc-text-head ub-pc bc-btn"
+             onclick="uexFileMgrCase.explorer_dir_select()">
+            打开文件浏览(可选目录)
+        </div>
+        <div class="button ub ub-ac bc-text-head ub-pc bc-btn"
+             onclick="uexFileMgrCase.copy_directory()">
+            拷贝目录
+        </div>
+    </div>
+    <div id="resultImg"></div>
+</div>
+<script src="js/appcan.js"></script>
+<script src="js/appcan.control.js"></script>
+<script src="js/appcan.scrollbox.js"></script>
+<script src="js/template.import.js"></script>
+<script src="./assets/mvvm/index.js"></script>
+<script>
+    var UNIT_TEST = {
+      log: function (content) {
+        console.log("UNIT_TEST: " + content);
+      },
+      assert: function (result) {
+        alert("执行是否成功：" + result);
+      },
+    };
+    var uexFileMgrCase = {
+        "create" : function() {
+            var f = uexFileMgr.create({
+                path:"wgt://create.txt"
+            });
+            if (f != null) {
+                uexFileMgr.closeFile(f);
+            }
+            UNIT_TEST.assertNotEqual(f, 0);
+
+        },
+        "mkdir":function () {
+            uexFileMgr.deleteFileByPath("wgt://data/test11");
+            var result=uexFileMgr.mkdir({
+                path:"wgt://data/test11"
+            });
+            UNIT_TEST.assertTrue(result);
+        },
+        "open" : function() {
+            var f = uexFileMgr.open({
+                path:"wgt://demo.txt",
+                mode:2
+            });
+            if (f != null) {
+                uexFileMgr.closeFile(f);
+                UNIT_TEST.assert(true);
+            }else{
+                UNIT_TEST.assert(false);
+            }
+        },
+        "deleteFileByPath":function () {
+            var file = uexFileMgr.open({
+                path: "wgt://data/222.txt",
+                mode: 4
+            });
+            if(!file){
+                UNIT_TEST.assert(false);
+            }else{
+                var ret = uexFileMgr.deleteFileByPath("wgt://data/222.txt");
+                uexFileMgr.closeFile(file);
+                UNIT_TEST.assertTrue(ret);
+            }
+        },
+        "isFileExistByPath":function () {
+            var result= uexFileMgr.isFileExistByPath("wgt://data/222.txt");
+            UNIT_TEST.assertTrue(!result);
+        },
+        "getFileTypeByPath": function () {
+            var result=uexFileMgr.getFileTypeByPath("wgt://data");
+            UNIT_TEST.assertEqual(result,1);
+        },
+        "renameFile" : function() {
+            uexFileMgr.renameFile({
+                oldFilePath:"wgt://demo.txt",
+                newFilePath:"wgt://open.txt"
+            }, function(error) {
+                UNIT_TEST.assertEqual(error,0);
+            });
+        },
+        "getFileRealPath" : function() {
+            var p = uexFileMgr.getFileRealPath("wgt://open.txt");
+            UNIT_TEST.assertString(p);
+        },
+        "getFileSize" : function() {
+            var file=uexFileMgr.open({
+                path:"wgt://open.txt"
+            });
+            var size = uexFileMgr.getFileSize(file,"wgt://open.txt");
+            if (size!=-1){
+                UNIT_TEST.log("size:"+size);
+                UNIT_TEST.assert(true);
+            }else{
+                UNIT_TEST.assert(false);
+            }
+        },
+        "getFilePath":function () {
+            var file = uexFileMgr.open({
+                path: "wgt://data/1.txt",
+                mode: 3
+            });
+            var path = uexFileMgr.getFilePath(file);
+            UNIT_TEST.assertNotEqual(path,null);
+        },
+        "closeFile":function () {
+            var file=uexFileMgr.open({
+                path:"wgt://open.txt"
+            });
+            if(file!=null){
+                var result =uexFileMgr.closeFile(file);
+                UNIT_TEST.assertTrue(result);
+            }else{
+                UNIT_TEST.assert(false);
+            }
+        },
+        "getFileListByPath" : function() {
+            var info = uexFileMgr.getFileListByPath("wgt://");
+            UNIT_TEST.log(JSON.stringify(info));
+            UNIT_TEST.assertTrue(info != null);
+
+        },
+        "explorer" : function() {
+            uexFileMgr.explorer("wgt://", function(error, path) {
+                UNIT_TEST.log(JSON.stringify(path));
+                if (!error) {
+                    UNIT_TEST.assert(true);
+                } else
+                    UNIT_TEST.assert(false);
+            })
+        },
+        "explorer_dir_select" : function() {
+            uexFileMgr.explorer({
+                "inPath": "wgt://",
+                "canDirectorySelected": "true"
+            }, function(error, path) {
+                UNIT_TEST.log(JSON.stringify(path));
+                if (!error) {
+                    UNIT_TEST.assert(true);
+                } else
+                    UNIT_TEST.assert(false);
+            })
+        },
+        "multiExplorer" : function() {
+            uexFileMgr.multiExplorer("wgt://", function(error, path) {
+                UNIT_TEST.log(JSON.stringify(path));
+                if (!error) {
+                    UNIT_TEST.assert(true);
+                } else
+                    UNIT_TEST.assert(false);
+            })
+        },
+        "isFileExistByPath" : function() {
+            UNIT_TEST.assertTrue(uexFileMgr.isFileExistByPath("wgt://open.txt"));
+        },
+        "search":function () {
+            var data = {
+                path:"res://",
+                flag:5,
+                keywords:["case","main"],
+                suffixes:["txt","js"]
+            };
+            uexFileMgr.search(data,function(err,result){
+                if(!err){
+                    UNIT_TEST.log(JSON.stringify(result));
+                    UNIT_TEST.assert(true);
+                }else{
+                    UNIT_TEST.log(false);
+                }
+            });
+        },
+        "getFileSizeByPath":function () {
+            var params = {
+                path:"wgt://",
+                unit:"KB"
+            }
+            uexFileMgr.getFileSizeByPath(params,function(error,info){
+                if(!error){
+                    UNIT_TEST.log(JSON.stringify(info));
+                    UNIT_TEST.assert(true);
+                }else{
+                    UNIT_TEST.assert(false);
+                }
+            });
+        },
+        "copy":function () {
+            uexFileMgr.mkdir({
+                path:"wgt://test2/"
+            });
+            uexFileMgr.copy({
+                src: "wgt://data/123456.txt",
+                target: "wgt://test2/"
+            },function(error){
+                if(!error){
+                    var ret = uexFileMgr.deleteFileByPath("wgt://test2/123456.txt");
+                    UNIT_TEST.assert(true);
+                }else{
+                    UNIT_TEST.assert(false);
+                }
+            });
+        },
+        "copy_directory":function () {
+            uexFileMgr.copy({
+                src: "/sdcard/Download/Browser",
+                target: "/sdcard/Download/0.Developer"
+            },function(error){
+                if(!error){
+                    UNIT_TEST.assert(true);
+                }else{
+                    UNIT_TEST.assert(false);
+                }
+            });
+        }
+    };
+  </script>
+</body>
+
+</html>
